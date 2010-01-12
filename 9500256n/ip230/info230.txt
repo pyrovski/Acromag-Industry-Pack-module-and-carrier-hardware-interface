@@ -1,0 +1,1053 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                                    Acromag, Inc.
+                                  30765 S.Wixom Road
+                                    P.O. Box 437
+                              Wixom, Michigan 48393-7037
+
+                                Phone: (248)295-0310
+                                 FAX: (248)624-9234
+
+                               Linux Software Library
+                     Information File for the IP230/IP235 Boards
+                                        V2.0
+                                      04/11/02
+
+
+
+
+               The  information  in this manual is subject to  change
+               without notice.   Acromag,  Inc.  makes no warranty of
+               any kind with regard to this material and accompanying
+               software,  including, but not limited to , the implied
+               warranties  of  merchantability  and  fitness  for   a
+               particular   purpose.    Acromag,   Inc.   assumes  no
+               responsibility for any errors that may appear in  this
+               manual and accompanying software.
+
+               See GPL.txt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1. Overview
+
+	This  "information"  file  contains a description of  the library
+	programs used for the following models of Acromag Industrial  I/O
+	Boards:
+
+	     IP230  16-Bit Analog Output Board
+	     IP235  16-Bit Analog Output Board w/ On-Board Ram
+		    and Interrupt Capability
+
+	2. Introduction
+
+	The software for the  IP230/235 Output  board  is  implemented as
+	a library of "C" functions.  This will  make  it     possible  to
+	utilize the board by simply linking  the user's  code	with  the
+	provided   library   and   making   function   calls   for   each
+	"command"  to be accomplished.  Most of the function  calls  will
+	require  a few parameters or the address of a parameter block  to
+	be  passed.   The  parameters will  include  the  board  address,
+	configuration  information,  data storage addresses,  and  status
+	information. These functions accomplish the following tasks:
+
+	     - Configuration
+	     - Read Status and ID
+	     - Write to DAC's
+	     - Trigger Output
+
+	Also  included  is  a demonstration program which shows  how  the
+	library  routines  are used. It  is a helpful program to use when
+	first  installing the board, checking it out, and learning how it
+	works.
+
+	In this document, the term "channel" is used to describe one of 4
+	or 8 channels depending on the model that was purchased. Channels
+	are numbered 0 through 3 or 0 through 7.
+
+
+	3. List of Files
+
+	The library  software  for  each  Acromag  I/O  board  is  in	a
+	correspondingly named subdirectory  on the  supplied media.   The
+	files  which  make  up the  library  for the  IP230/235 board are
+	stored in the subdirectory named "IP230".
+
+	There  are two types of program files provided.   Library program
+	files are the files which make up the "library".  Support program
+	files contain example  programs which show how to use the library
+	programs.
+
+
+
+
+
+				   1
+
+
+
+
+
+
+
+	3.1 Library Program Files
+
+	The  following  files  are included on the supplied  media  and
+	make up the actual "library" software.
+
+	     ip230.h	- include file
+	     cd230.c	- routine to calculate corrected data
+	     contreg.c  - configure
+	     isr235.c	- interrupt handler for the IP235's
+	     rmid230.c  - reads ID prom, reads calibration coefficients
+	     rwwavmem.c - performs read and writes to ram
+	     timer.c	- performs read and writes to timer registers
+	     wro230.c	- routine to write to DAC output registers
+	     wcc230.c	- write to calibration coefficient locations
+
+
+	3.2 Support Program Files
+
+	The  following  files are included on the  supplied  media.   The
+	test program demonstrates how  the library  programs may be used.
+
+         drvr230.c - test program to  demonstrate  library  programs.
+         apc8620.h - include file for carrier support.
+         apc8620.c - source file for carrier support.
+
+
+	4. Software Installation
+
+	It  is strongly advised that the user make a backup copy  of  the
+	distribution media  and  that  the original media be  stored in a
+        safe place.
+
+	The  software is installed by simply copying the library files to
+	the  user's  work directory and compiling and  linking  with  the
+	user's application program.
+
+
+	5. Hardware Installation
+
+	For proper installation of each Acromag I/O board the user should
+	refer to the appropriate user's manual.
+
+
+	6. Usage of the Library and Support Programs
+
+	The  software is installed  by copying the supplied files to your
+	work  directory and compiling  and linking  with your application
+	program.
+	It  is recommended that the user read the  User's Manual for  the
+	board  and  thoroughly  familiarize themselves with the hardware.
+	For a new user to become familiar with the Acromag Library it may
+	be  most  "straight forward"  to proceed in the following manner:
+
+
+
+
+
+
+				   2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             (a) Build and load the Acromag device driver module.
+
+                 i)   See  the  information  file  in  the device driver
+                 directory "/home/ip/dev8620/info.txt" for information
+                 about building and loading the device driver module.
+
+
+             (b) Build and execute the Acromag Library Demonstration.
+
+
+                  i)   Copy the Acromag Library routines from the "Ip230"
+                  directory of the source media to a new directory  under
+                  /home/ip/ip230.
+
+
+                  ii)  Copy   the  carrier   support  routines  from  the
+                  "carrier" directory  of the  source  media  to  a  new
+                  directory  under   /home/ip/carrier. 
+
+
+                  iii) Use the makefile to build the project.
+
+
+                  iv)  Launch  the  debugger,  "gdb a.out"  use  the  run 
+                  command start the program.
+
+
+                  v)   The  Acromag  Demonstration  program  menu  should
+                  appear  on  the  target processor's  console  terminal.
+
+
+
+
+
+
+
+
+
+
+
+
+				   3
+
+
+
+
+
+	The following menu is displayed for the IP230:
+
+	      IP230 Library Demonstration  Rev. A
+	       1. Exit this Program
+	       2. Set Carrier Base Address
+	       3. Set IP Slot Letter
+	       4. Read ID Prom
+	       5. Control Register
+	       6. Write Ideal Data To Output
+	       7. Write Corrected Data To Output
+	       8. Start Conversion
+	       9. Display Ideal/Corrected Data, Offset/Gain Coefficients
+	      10. Clear All Data Buffers
+	      11. Display Control Register
+
+	      Select:
+
+	The following menu is displayed for the IP235:
+
+	      IP235 Library Demonstration  Rev. A
+	       1. Exit this Program
+	       2. Set Carrier Base Address
+	       3. Set IP Slot Letter
+	       4. Read ID Prom and Event Status
+	       5. Control Register
+	       6. Write Ideal Data To Output
+	       7. Write Corrected Data To Output
+	       8. Start Conversion
+	       9. Display Ideal/Corrected Data, Offset/Gain Coefficients
+	      10. Clear All Data Buffers
+	      11. Display Control/Timer Registers
+	      12. Write Waveform Memory
+	      13. Read Waveform Memory
+	      14. Write to Conversion Timer
+	      15. Write to Timer Prescaler
+
+
+
+	      Select:
+
+	To perform basic Analog Output functions, using  either the IP230
+	or IP235 follow this sequence of main menu selections:
+
+	    Select  2: To set the Carrier base address.
+	    Select  3: To set the IP Slot Letter.
+	    Select  5: To configure the control register.
+	    Select  6: To write ideal data to a DAC register.
+	    Select  7: To write corrected data to a DAC register.
+
+	Note: Choose 6 or 7, they perform  the same basic  function  with
+	      the  only  difference  being  that  7  will  give corrected
+	      outputs, using  on-board  calibration coeficients, that are
+	      more accurate.
+
+	    Select  8: To write to the "Start Conversion" bit.
+
+
+
+
+
+				   4
+
+
+
+
+
+	 Note: If you  are  using a  IP235  and  select a conversion mode
+	       other than  "Single  Conversion  from  DAC  Registers" you
+	       will need to configure other parameters  during  Selection
+	       number 4. These parameters will be discussed later.
+
+	To use  the example  interrupt  routines  provided,  follow  this
+	sequence of main menu selections:
+	NOTE: Interrupts are only possible on the IP235.
+
+	    Select  2: To set the Carrier base address.
+	    Select  3: To set the IP module base address.
+	    Select 16: To attach an interrupt exception handler.
+	    Select  5: Control Register, you will see this menu:
+
+		    1. Return to previous menu
+		    2. Set Trigger Control
+		    3. Set Conversion Mode
+		    4. Software Reset
+		    5. Set Ranges
+		    6. Set Waveform Memory Select
+		    7. Set Waveform Memory Increment Mode
+		    8. Set Interrupt Vector
+
+	    Select 12: Write to Waveform Memory, you will see this menu:
+
+		    1. Return to previous menu
+		    2. Sine Wave Data
+		    3. Triangle Wave Data
+		    4. Square Wave Data
+		    5. Zero Fill Data
+		    6. Enter Individual Data
+
+	    Select 14: Write to Conversion Timer
+	    Select 15: Write to Timer/Prescaler
+	    Select  8. To write to the start conversion bit
+	    Select  4: To read and clear "Event Status".
+
+  NOTE: Because  of the large number  of  variables  associated  with the
+	above choices, it is impossible to  give  a  definitive  set  up.
+	Therefore  it is up to the user to read the manual and understand
+	the choices available to them.
+
+
+
+
+	6.1 Explanation of the Main Demonstration Menu
+
+	The following is an explanation of each menu selection:
+
+	     1. Exit this Program
+
+	     This selection disables interrupts used by the demonstration
+         program and causes  execution  to be  returned to the shell.
+
+	     2. Set Carrier Base Address
+
+	     This  selection  allows the user to set or change  the  base
+	     address of the IP carrier being used.
+
+
+				   5
+
+
+
+
+
+	     3. Set IP Slot Letter
+
+	     This  selection  allows the user to set or change  the  slot
+	     letter of the IP module being used.   The value entered here
+	     will  automatically  be  entered in  the  Configuration  and
+	     Status Block structures.   This selection also causes a read
+	     of the calibration coefficients and stores them in an array.
+
+	     4. Read ID and Status Command
+
+	     This  menu  selection will call the rmid230()  function  and
+	     pass  a pointer  which points  to  the  Configuration  Block
+	     structure. The  current  status information is read from the
+	     board  and  written  into  this  structure  by the rmid230()
+	     function.  The status information is  then displayed  by the
+	     calling routine. This selection also reads and displays  the
+	     interrupt event status.
+
+	     5. Control Register
+
+	     See section 6.2 for details on this menu item.
+
+	     6. Write Ideal Data to Output
+
+	     This command will calculate an ideal(uncorrected) data count
+	     based  on  your  desired  voltage  and  write it  to the DAC
+	     register.
+
+	     7. Write Corrected Data to Output
+
+	     This command will calculate a corrected data count using the
+	     gain  and  offset  coefficients  and write  it  to  the  DAC
+	     register. Use this selection to obtain greatest accuracy.
+
+	     8. Start Conversion
+
+	     This command will write a 1 to the  "Start Conversion"  bit.
+	     This must be done in order for the board to start generating
+	     outputs  or  whenever  a  change  is  made. In order to stop
+	     conversions  when  using  the  continuous cycle  mode on the
+	     IP235,  write  a 000  into the  mode  bits  of  the  control
+	     register. By  setting  up	 the  control	register  to   do
+	     continuous cycles and performing a  start conversion  again,
+	     the  output  will continue from where it left off in memory.
+	     This is providing that no reset had occured  since  stopping
+	     the conversions.
+
+	     9. Display Ideal/Corrected Data, Gain/Offset Coefficients
+
+	     Displays the data and coefficients for each  channel on  the
+	     board, where ID  = ideal(uncorrected)  data, CD  = corrected
+	     data, GD  = gain  data(coefficient), and  OD  = offset  data
+	     (coefficient).
+
+	     10. Clear Data Buffers
+
+	     Clears out all of the ideal(uncorrected)  and corrected data
+	     buffers.
+
+
+				   6
+
+
+
+
+
+	     11. Display Control/Timer Registers
+
+	     Displays the contents of the control registers and the timer
+	     registers.(timer registers on the IP235 only)
+
+	     12. Write Waveform Memory
+
+	     See Section 6.3 for details on this menu item
+
+	     13. Read Waveform Memory
+
+	     Reads a single data word from a  single address in  waveform
+	     memory.
+
+	     14. Write to Conversion Timer
+
+	     Writes  the  value   requested  into  the  conversion  timer
+	     register. It's limits are 0000H to ffffH.
+
+	     15. Write to Timer Prescaler
+
+	     Writes  the  value  requested  into  the	Timer / Prescaler
+	     register. It's limits are 35H to ffH
+
+	     16. Enable Interrupt
+
+	     This  menu selection allows the user  to  enable the interrupt.
+
+
+	6.2  Explanation of the Control Register Menu
+
+	This menu  is  displayed  when  the  user  selects  the  "Control
+	Register" menu item  from the  Main  Demonstration  Menu. Through
+	the sub menus provided, it will be possible for the user to enter
+	values into the Control Register and set the board for their use.
+
+		    1. Return to previous menu
+		    2. Set Trigger Control
+		    3. Set Conversion Mode
+		    4. Software Reset
+		    5. Set Ranges
+		    6. Set Waveform Memory Select
+		    7. Set Waveform Memory Increment Mode
+		    8. Set Interrupt Vector
+		    Select:
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to Previous Menu
+
+	     This selection returns the user to the Main Menu.
+
+	     
+
+
+
+
+
+
+
+				   7
+
+
+
+
+
+
+	     2. Set Trigger Control
+
+	     This menu item allows the user to select a triggering option
+	     from the following choices:
+		 1. Return to previous menu
+		 2. External, Internal and Software Triggers Enabled
+		 3. External Trigger Enabled
+		 4. External Trigger Output on Internal or Software Trigger
+
+	     3. Set Conversion Mode
+
+	     This selection allows the user to  make a  choice  from  the
+	     following:
+		  1 - Return to previous menu
+		  2 - DAC Conversions Disabled
+		  3 - Single Conversion From DAC Registers
+
+	     The following choices are included for the IP235 only:
+		  4 - Single Conversion from Waveform Memory
+		  5 - Cycle Through Waveform Memory Once
+		  6 - Cycle Through Waveform Memory Once and  Generate an
+		      Interrupt
+		  7 - Continuously Cycle Through Waveform Memory
+
+	     4. Software Reset
+
+	     This selection allows the user to generate a software  reset
+	     when needed.
+
+	     5. Set Ranges
+
+	     This selection allows the  user to set the  ranges on  a per
+	     channel  basis. The  range setup  defaults to the Bipolar 10
+	     volt mode for all channels.
+
+	     6. Set Waveform Memory Select
+
+	     This selection  allows the  user to  select  which  channels
+	     waveform memory is to be operated upon.
+
+	     7. Set Waveform Increment Mode
+
+	     This selection will allow the  user to  select an  automatic
+	     or manual address selection scheme when writing to  waveform
+	     memory. The automatic mode can only  be used when  the  user
+	     has written their own routine for loading data in successive
+	     address locations.
+
+	     8. Set Interrupt Vector
+
+	     This selection allows the  user to  examine and  change  the
+	     interrupt vector.
+
+
+	
+
+
+
+
+				   8
+
+
+
+
+
+
+	6.3  Explanation of the Write Waveform Memory Menu
+
+	This menu is displayed when the user selects the "Write Waveform 
+	Memory" menu item from the Main Demonstration Menu.  Through the
+	sub menus provided, it will be possible for the user to enter 
+	data for three kinds of waves, Sine, Triangle, and Square.  Also,
+	it will be possible to enter individual data for each channel as
+	well as writing zeros to the 2048 data values for each channel.
+
+		    1. Return to previous menu
+		    2. Sine Wave Data
+		    3. Triangle Wave Data
+		    4. Square Wave Data
+		    5. Zero Fill Data
+		    6. Enter Individual Data
+		    Select:
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to previous menu
+
+	     This selection returns the user to the Main Menu.
+
+	     2. Sine Wave Data
+
+	     This selection allows the user to create a sine wave by 
+	     simply choosing the channel they want to use.
+
+	     3. Triangle Wave Data
+
+	     This selection allows the user to create a triangle wave by
+	     simply choosing the channel they want to use.
+
+	     4. Square Wave Data
+
+	     This selection allows the user to create a square wave by
+	     simply choosing the channel they want to use.
+
+	     5. Zero Fill Data
+
+	     This selection allows the user to zero every data value on
+	     a channel simply by selecting the channel of interest.
+
+	     6. Enter Individual Data
+
+	     This selection allows the user to enter data for any given
+	     address number (0 to 7ff hex) on channels 0 through7.
+
+
+
+
+
+
+
+
+
+
+
+
+				   9
+
+
+
+
+
+
+	7. Description of Library Programs.
+
+	Following  are descriptions of the programs and files which  make
+	up the library.
+
+	ip230.h - This module contains  the  definitions  and  structures
+	used by the library.
+
+	contreg.c -This file contains  the  routines that  write  to  the
+	control register. Following is a list of  routines  contained  in
+	this file and a brief description of each:
+
+	 void wav_mem_sel -  Sets which channels block of waveform memory
+	 is going to be written to or read from.
+
+	  calling sequence:
+
+	    wav_mem_sel(chan, ptr);
+
+	     where:
+		  chan(int) - is  the  channel  number  to set the memory
+		  up for.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void wav_mem_inc - Sets the waveform increment mode.
+
+	  calling sequence:
+
+	    wav_mem_inc(choice, ptr);
+
+	     where:
+
+		  choice(int) - is the  mode  selected,  with  1 enabling
+		  the automatic increment and 2 disabling it.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void trig_mode - Sets the trigger mode desired by the user.
+
+	   calling sequence:
+
+	    trig_mode(choice, ptr);
+
+	     where:
+
+		  choice(int) - is the trigger mode selected. Passing  it
+		  the  following  will  select  the  corresponding  mode:
+
+		   1 - External, internal and software triggers enabled
+		   2 - External triggers only enabled
+		   3 - External trigger is output on internal or
+		       software is received.
+
+
+				   10
+
+
+
+
+
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+	 void conv_mode - Sets the desired conversion mode.
+
+	  calling sequence:
+
+	   conv_mode(choice, ptr)
+
+	     where:
+		  choice(int) - is the trigger mode  selected.
+
+		   1 - Disabled, no conversions will occur
+		   2 - Single conversion from DAC registers
+		   3 - Single conversion from waveform memory
+		   4 - Cycle once through waveform memory
+		   5 - Cycle once through waveform memory and generate
+		       an interrupt
+		   6 - Continuously cycle through waveform memory.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void  soft_reset -  Generates  a  software  reset  stopping  all
+	 activity and placing board in its power up state.
+
+	  calling sequence:
+
+	   soft_reset(ptr)
+
+	     where:
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void range_sel - Allows the user to specify the range that  each
+	 channel is set for.
+
+	  calling sequence:
+
+	   range_sel(ptr, chan, choice)
+
+	     where:
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+		  chan(int) - is the channel to set  the range  for.  Its
+		  range will be 0 - 3 or 0 - 7 depending  on which  board
+		  was purchased.
+
+		  choice(int) - is the range to  assign to  the  selected
+		  channel.
+		   1 -  -5 to  +5 volt bipolar range
+		   2 - -10 to +10 volt bipolar range
+		   3 -	 0 to +10 volt unipolar range
+
+
+
+				   11
+
+
+
+
+
+
+	rwwavmem.c -This file contains  the routines  that write  to  the
+	waveform memory.
+
+	word wav_mem -  This routine is used to  read and  write data  to
+	and from the waveform memory.
+
+	calling sequence:
+
+	   wav_mem(rw, addr, wdata, ptr)
+
+	     where:
+
+		  rw(int) - tells the function to read or write.
+		  0 = read and 1 = write
+
+		  addr(word) - tells the function which  address to  read
+		  or write to or from.
+
+		  wdata(word) - tells the function  the data  that  is to
+		  be written.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	rmid230.c - This  file contains  the routines  that  read the  ID
+	ROM,  and  calibration  coefficients.  Following  is  a  list  of
+	routines contained in this file and a  brief description of each:
+
+	 void rmid230 - This routine is used to read  the boards ID prom.
+
+	  calling sequence:
+
+	   rmid230(ptr)
+
+	     where:
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void rcc230 - This  routine is  used  to  read  the  calibration
+	 coefficients from the board and store them in an array.
+
+	  calling sequence:
+
+	   rcc230(ptr, channels)
+
+	     where:
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+		  channels(int) - is the number of channels on the board.
+
+
+
+
+
+				   12
+
+
+
+
+
+
+	cd230.c - This file  contains the  routine  that  calculates  and
+	returns count needed in order to give the corrected output.
+
+	 void cd230 - This routine calculates the corrected data.
+
+	  calling sequence:
+
+	   cd230(ptr,channel)
+
+	     where:
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+		  channel(int) - DAC register to write.   0 - 3 or 0 - 7.
+
+	  NOTE: the ideal count value must be  calculated and  stored  in
+	  the configuration  block structure  for this  function to  work
+	  properly.
+
+
+	timer.c -This file contains the  routines  that write  the  timer
+	prescaler register and the  conversion timer  register. Following
+	is a list  of  routines  contained  in  this  file  and  a  brief
+	description of each:
+
+	 void tim_pre - This routine  writes  the value  passed to it  to
+	 the timer prescaler register.
+
+	  calling sequence:
+
+	   tim_pre(value, ptr)
+
+	     where:
+
+		  value(int) - value to write. Its limits are 35H to ffH.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	 void conv_time - This routine writes the value passed  to it  to
+	 the conversion timer register.
+
+	  calling sequence:
+
+	   conv_time(amount, ptr)
+
+	     where:
+
+		  amount(int) - value to write. Limits are 0000H - ffffH.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+
+
+
+				   13
+
+
+
+
+
+
+	wro230.c -This file contains  the  routines  that write  the  DAC
+	registers and the start conversion  register. Following is a list
+	of  routines  contained in  this file:
+
+	 void wro230 - This  is  the routine  that  actually  writes  the
+	 desired into the DAC register.
+
+	  calling sequence:
+
+	   wro230(channel,data, ptr)
+
+	     where:
+
+		  channel(int) - is the DAC register number to write  to.
+		  0 - 3 or 0 - 7.
+
+		  data(short) - is the value to write into the  register.
+		  Its limits are 0000H to ffffH.
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+
+
+
+
+	 void start_conv - This is the routine  writes a 1  to the  start
+	 conversion register.
+
+	  calling sequence:
+
+	   start_con(ptr)
+
+	     where:
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				   14
+
+
+
+
+
+
+	 void wcc230 - This routine writes calibration coefficients into
+         EEPROM.
+
+         ****************************************************************
+     	 * NOTE: IT IS RECOMMENDED THAT THESE  VALUES  NOT  BE  CHANGED *
+         * UNLESS  YOU  ARE   FAMILIAR  WITH  MAKING   THESE  TYPES  OF *
+         * CALCULATIONS   AND  HAVE   A  VOLTMETER  CAPABLE  OF  16-BIT *
+         * RESOLUTION AND ACCURACY. IF THESE VALUES ARE CHANGED AND NOT *
+         * PROPERLY CALCULATED, THE  BOARD  WILL HAVE TO BE RETURNED TO *
+         * THE FACTORY FOR CALIBRATION.  FOR THIS REASON, THIS FUNCTION *
+         * IS NOT SUPPORTED FROM THE DEMONSTRATION PROGRAM.             * 
+         ****************************************************************
+
+	  calling sequence:
+
+	   wcc230(ptr, channels, data, off_gain)
+
+	     where:
+
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+		  channels(int) - is the  channel  that  the  coefficient
+		  belongs to.
+
+		  data(int) - is the value to write into the EEPROM.  Its
+		  limits are 0000H to ffffH.
+
+		  off_gain(int) - tells the routine if its offset or gain
+		  coefficient. 1 = offset, 2 = gain
+
+
+
+	8. Description of Support Programs
+
+	Following  is  a  description of the support  files  and  program
+	modules  which  provide  examples  for  the  use  of  the library
+	programs.
+
+
+	drvr230.c  - This  is a program which demonstrates the  usage  of
+	the library modules.   This program is menu driven and allows the
+	user to become familiar with the  IP230/235 board and the library
+	software.   The user may,  through menu  selections,   configure,
+	read from, and write to the board.
+
+    apc88620.c - This  file   provides   carrier   support   routines.
+
+
+
+
+
+
+
+
+
+
+
+
+				   14

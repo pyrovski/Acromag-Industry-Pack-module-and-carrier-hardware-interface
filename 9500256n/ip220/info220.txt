@@ -1,0 +1,591 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                                    Acromag, Inc.
+                                  30765 S.Wixom Road
+                                    P.O. Box 437
+                              Wixom, Michigan 48393-7037
+
+                                Phone: (248)295-0310
+                                 FAX: (248)624-9234
+
+                               Linux Software Library
+                          Information File for the IP220 Board
+                                        V2.0
+                                      04/10/02
+
+
+
+
+               The  information  in this manual is subject to  change
+               without notice.   Acromag,  Inc.  makes no warranty of
+               any kind with regard to this material and accompanying
+               software,  including, but not limited to , the implied
+               warranties  of  merchantability  and  fitness  for   a
+               particular   purpose.    Acromag,   Inc.   assumes  no
+               responsibility for any errors that may appear in  this
+               manual and accompanying software.
+
+               See GPL.txt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       1.  Overview
+
+       This "information" file contains  a  description  of  the Library
+       programs  used for the following  Acromag Industrial I/O  Boards:
+
+       IP220 Voltage Output Board
+
+
+
+
+       2.  Introduction
+
+       The demonstration software for the IP220 I/O board is implemented
+       as a  library  of "C" functions.   This will make it  possible to
+       utilize the boards by simply linking the  user's  code  with  the
+       provided  library  and  making function calls for each  "command"
+       to be accomplished.   Most of the  function  calls  will  require
+       a  few parameters  or the address  of a  parameter  block  to  be
+       passed.	    The  parameters  will  include  the  board  address,
+       configuration  information,  data  storage  addresses, and status
+       information.  These functions accomplish the following tasks:
+
+
+	    - Transparent and Simultaneous Mode Select
+	    - Read I.D. and Calibration Coefficients
+	    - Write Ideal or Corrected Data to Outputs
+
+
+       Also included is a demonstration  program  which  shows  how  the
+       library routines are used.  It is also a good program to use when
+       first installing the board, checking it out and learning  how  it
+       works.
+
+
+       3.  List of Files
+
+       The  Library  software  for  each  Acromag  I/O  board  is  in  a
+       correspondingly  named  subdirectory  on the supplied media.  The
+       files which make up the Library for the IP220  are  stored in the
+       subdirectory named "IP220".
+
+       There are  two  types of program files provided.  Library program
+       files are the files which make up the "library".  Support program
+       files  contain example programs which show how to use the library
+       programs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+				      -1-
+
+
+
+
+
+
+       3.1 Library Program Files
+
+       The following files are included on  the  supplied  media  and
+       make up the actual "library" software.
+
+	    ip220.h    - include file
+	    mode220.c  - select output modes
+	    rccid220.c - read offset/gain coefficients
+	    rmid220.c  - read I.D.
+	    wro220.c   - write output
+	    cd220.c    - correct output data
+	    coef220.c  - compute offset/gain coefficients
+
+       3.2 Support Program Files
+
+       The  following  files  are  included  on the supplied media.  The
+       test program in this file demonstrates how  the  library programs
+       may be used.
+
+             drvr220.c - demonstration program for the IP220.
+             apc8620.h - include file for carrier support.
+             apc8620.c - source file for carrier support.
+
+
+       4.  Software Installation
+
+       The  software is installed by simply copying the library files to
+       the user's work directory and  compiling  and  linking  with  the
+       user's  application program.
+
+       5.  Hardware Installation
+
+       For proper installation of each Acromag I/O board the user should
+       refer  to  the  appropriate  user's manual.
+
+       6. Usage of the Library and Support Programs
+
+       The  software is installed  by copying the supplied files to your
+       work  directory and compiling  and linking  with your application
+       program.
+
+       It  is recommended that the user read the  User's Manual for  the
+       board  and  thoroughly  familiarize themselves with the hardware.
+
+       For a new user to become familiar with the Acromag Library it may
+       be  most  "straight forward"  to proceed in the following manner:
+
+
+
+
+
+
+
+
+
+
+
+
+
+				      -2-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             (a) Build and load the Acromag device driver module.
+
+                 i)   See  the  information  file  in  the device driver
+                 directory "/home/ip/dev8620/info.txt" for information
+                 about building and loading the device driver module.
+
+
+             (b) Build and execute the Acromag Library Demonstration.
+
+
+                  i)   Copy the Acromag Library routines from the "Ip220"
+                  directory of the source media to a new directory  under
+                  /home/ip/ip220.
+
+
+                  ii)  Copy   the  carrier   support  routines  from  the
+                  "carrier" directory  of the  source  media  to  a  new
+                  directory  under   /home/ip/carrier. 
+
+
+                  iii) Use the makefile to build the project.
+
+
+                  iv)  Launch  the  debugger,  "gdb a.out"  use  the  run 
+                  command start the program.
+
+
+                  v)   The  Acromag  Demonstration  program  menu  should
+                  appear  on  the  target processor's  console  terminal.
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				      -3-
+
+
+
+
+
+
+                  The following menu is displayed:
+
+          IP220 Library Demonstration  Rev. A
+		  1. Exit this Program
+		  2. Set Carrier Address
+		  3. Set IP Slot Letter
+		  4. Transparent Mode Select
+		  5. Simultaneous Mode Select
+		  6. Simultaneous Trigger
+		  7. Read Calibration Coefficients and I.D.
+		  8. Write Ideal Data To Output
+		  9. Write Corrected Data To Output
+		 10. Display Ideal/Corrected Data, Offset/Gain Coefficients
+		 11. Clear All Data Buffers
+		 12. Alter Offset/Gain Coefficients
+
+		 Select:
+
+	In preparation to write a single analog output the user  typically
+	would make the following sequence of menu selections:
+
+	     Select 2: To set the Carrier board address.
+	     Select 3: To set the IP Slot Letter.
+	     Select 4 or 5: To set Transparent or Simultaneous mode.
+	     Select 7: Read offset/gain coefficients and I.D. PROM.
+	     Select 8 or 9: To write ideal or corrected data to an output.
+	     Select 6: If simultaneous mode, trigger outputs.
+	     Select 10: To display ideal, corrected, offset, gain data.
+	     Select 12: To Alter offset/gain coefficients.
+
+
+       6.1 Explanation of Main Library Demonstration Menu
+
+       Following is an explanation of each menu selection:
+
+       6.1.1 Exit this Program
+
+       This selection causes execution to be returned to the shell.
+
+       6.1.2 Set Carrier Board Address
+
+       This selection allows the user to set or change  the  address  of
+       the carrier board being used.
+
+       6.1.3 Set IP Slot Letter
+
+       This selection allows the user to set or change the slot letter of
+       the IP module being used.  The value entered here is automatically
+       entered in the Status Block structure.
+
+       6.1.4 Transparent Mode Select
+
+       This  selection  will  call  the  mode220()  function  and pass a
+       pointer  to  the  board  base address  and  the  mode  parameter.
+       Selecting  transparent mode  allows individual output channels to
+       be updated anytime a new data value is written.
+
+
+
+				      -4-
+
+
+
+
+
+
+       6.1.5 Simultaneous Mode Select
+
+       This  selection  will  call  the  mode220()  function  and pass a
+       pointer  to  the  board  base address  and  the  mode  parameter.
+       Selecting  simultaneous  mode  allows all output  channels  to be
+       updated  (new values written),  while  maintaining  the  previous
+       values at the output.
+
+       6.1.6 Simultaneous Trigger
+
+       This  selection  will  call  the  mode220()  function  and pass a
+       pointer  to  the  board  base address  and  the  mode  parameter.
+       The   simultaneous   trigger  works   in  conjunction   with  the
+       Simultaneous Mode to transfer all channels' digital data from the
+       D/A input latch to the analog output at the same time.
+
+       6.1.7 Read Calibration Coefficients and I.D.
+
+       This  selection will  call the  rccid220()  function  and  pass a
+       pointer  to  the board  base  address,  I.D. PROM  buffer, and to
+       the gain/offset coefficients  buffers.
+
+       6.1.8 Write Ideal Data To Output
+
+       This selection will call the wro220() function and pass a pointer
+       to  the board  base  address,  output channel, and data value to
+       write to that channel.  The data written is ideal without offset
+       or gain correction.
+
+       6.1.9 Write Corrected Data To Output
+
+       This selection will  call the  cd220()  routine to  correct  the
+       ideal data value by using the offset  and gain coefficients read
+       from the board.  This selection then calls the wro220() function
+       and passes a pointer to the board base address,  output channel,
+       and corrected data value to write to that channel.
+
+       6.1.10 Display Ideal/Corrected Data, Offset/Gain Coefficients
+
+       This  selection  will  display the  current  ideal  data values,
+       the  corrected  data values, the  gain, and offset coefficients.
+
+       6.1.11 Clear All Data Buffers
+
+       This selection will clear the contents of the ideal data buffer,
+       the  corrected  data  buffer, the gain,  and offset  coefficient
+       data buffers.
+
+       6.1.12 Alter Offset/Gain Coefficients
+
+       This selection allows  the user to  alter the  gain, and  offset
+       coefficients read from the board.   The  user  may determine his
+       own  gain and offset coefficients by measuring the zero and full
+       scale  output voltages  with a DVM,  typing the  values into the
+       program,  and load  them into  the gain and offset data buffers.
+
+
+
+
+				      -5-
+
+
+
+
+
+
+       7.  Description of Library Programs
+
+       Following  are  descriptions of the programs and files which make
+       up the library.
+
+       7.1 ip220.h
+
+       This module contains the definitions and structures used  by  the
+       library.
+
+       7.2 mode220.c
+
+       This  module  is  used to select the  operating mode and  perform
+       the Simultaneous Output Trigger function for the IP220.
+
+
+	 calling sequence:
+
+	    mode220(ptr);
+
+	    where:
+		 ptr  - (structure  pointer) This is a  pointer  to  the
+		  board configuration structure.
+
+
+
+       7.3 rccid220.c
+
+       This module is used to perform the read offset/gain  coefficients
+       function  for the IP220 board.	A pointer  to  the Configuration
+       Block  is  passed  to  this  routine.  The routine uses a pointer
+       within the Configuration Block  to  reference  registers  on  the
+       board  and  transfers  the gain/offset information from the board
+       to the gain/offset buffers.
+
+
+	 calling sequence:
+
+	    rccid220(ptr);
+
+	    where:
+		 ptr  - (structure  pointer)  This is a pointer  to  the
+		 Configuration Block structure.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				      -6-
+
+
+
+
+
+
+       7.4 rmid220.c
+
+       This module performs the read I.D. function for the IP220  board.
+       A pointer to the Status Block is  passed  to this routine.    The
+       routine uses a pointer  within  the  Status  Block  to  reference
+       registers on the board and transfers  the I.D.  information  from
+       the board to the I.D. buffers.
+
+	 calling sequence:
+
+	    rmid220(ptr);
+
+	    where:
+		 ptr  - (structure  pointer)  This is a pointer  to  the
+		 Status Block structure.
+
+
+       7.5 wro220.c
+
+       This  module  is  used to perform the "write output" function for
+       the  IP220.    A  pointer  to  the  board  memory  map  structure
+       (base  address  of  board),  a  channel number and data value are
+       passed to this routine.  This information is used  to  write  the
+       data value to the specified output channel on the board.
+
+	 calling sequence:
+
+	    wro220(ptr,channel,data);
+
+	    where:
+		 ptr  - (structure  pointer)  This is a pointer  to  the
+		 Configuration Block structure.
+		 channel - (unsigned short) Value of the analog output
+			 channel number.
+		 data - (unsigned short) - Value of the analog output data.
+
+
+
+       7.6 cd220.c
+
+       This  module  is  used to perform the correct  data  function for
+       the IP220.  A pointer to the board  Configuration Block structure
+       and channel number are passed to this routine.  This  information
+       is  used  to  correct  the  ideal data value with the gain/offset
+       coefficients obtained from the board to produce calibrated output
+       values.
+
+	 calling sequence:
+
+	    cd220(ptr,channel);
+
+	    where:
+		 ptr  - (structure  pointer)  This is a pointer  to  the
+			 Configuration Block structure.
+		 channel - (unsigned short) Value of the analog output
+			 channel number.
+
+
+
+				      -7-
+
+
+
+
+
+
+
+
+
+
+       7.7 coef220.c
+
+       This module  is  used to compute new gain and offset coefficients
+       for the IP220.	Pointers  to the zero,  span,  offset, and gain
+       data  areas  are  passed  to  this  routine.   This  information
+       is used to compute  the  new offset and gain coefficients for an
+       output channel.
+
+	 calling sequence:
+
+	    coef220(zero,span,offset,gain);
+
+	    where:
+		 zero  - (pointer to float)  This is a pointer  to  the
+			 zero data value.
+		 span  - (pointer to float)  This is a pointer  to  the
+			 span data value.
+		 offset - (pointer to char)  This is a pointer  to  the
+			 offset coefficient data area.
+		 span - (pointer to char)  This is a pointer  to  the
+			 span coefficient data area.
+
+
+
+
+
+       8.  Description of Support Programs
+
+
+       8.1 drvr220.c
+
+	Following  is  a  description of the support  files  and  program
+	modules  which  provide  examples  for  the  use  of  the library
+	programs.
+
+	carrier.c - This  file   provides   carrier   support   routines.
+
+	drvr220.c  - This  is a program which demonstrates the  usage  of
+	the library modules.   This program is menu driven and allows the
+	user to become familiar with the  IP220  board  and  the  library
+	software.    The user may, through  menu selections,  initialize,
+	read status and write to outputs of the board.
+
+
+
+
+
+
+
+
+
+
+
+
+
+				      -9-
+

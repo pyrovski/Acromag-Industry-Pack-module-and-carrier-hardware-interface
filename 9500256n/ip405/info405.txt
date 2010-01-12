@@ -1,0 +1,525 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+                                    Acromag, Inc.
+                                  30765 S.Wixom Road
+                                    P.O. Box 437
+                              Wixom, Michigan 48393-7037
+
+                                Phone: (248)295-0310
+                                 FAX: (248)624-9234
+
+                               Linux Software Library
+                          Information File for the IP405 Board
+                                        V2.0
+                                      04/10/02
+
+
+
+
+               The  information  in this manual is subject to  change
+               without notice.   Acromag,  Inc.  makes no warranty of
+               any kind with regard to this material and accompanying
+               software,  including, but not limited to , the implied
+               warranties  of  merchantability  and  fitness  for   a
+               particular   purpose.    Acromag,   Inc.   assumes  no
+               responsibility for any errors that may appear in  this
+               manual and accompanying software.
+
+               See GPL.txt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1. Overview
+
+	This  "information"  file  contains a description of  the Library
+	programs used for the  following  Acromag  Industrial  I/O Board:
+
+	     IP405 Digital Output Board
+
+
+	2. Introduction
+
+	The   software  for   the  IP405  Output  board  is   implemented
+	as   a  library   of   "C"  functions.    This   will   make   it
+	possible to utilize the board  by simply linking the user's  code
+	with  the  provided library and making function  calls  for  each
+	"command"  to be accomplished.  Most of the function  calls  will
+	require  a few parameters or the address of a parameter block  to
+	be  passed.   The  parameters will  include  the  board  address,
+	data   storage   addresses,   and   status   information.   These
+	functions accomplish the following tasks:
+
+
+	     - Read Status
+	     - Read Output Data Latch
+	     - Write Output
+
+
+	Also  included  is  a demonstration program which shows  how  the
+	library routines are used.  It is also a helpful program  to  use
+	when first installing the board, checking it out and learning how
+	it works.
+
+	In this document, the term "port" is used to describe a block  of
+	16  output  channels  numbered  0  through  15.    Channels  0-15
+	correspond  to  port  0,  16-31  to  port 1,  and 31-40 to port3.
+	Individual output channels are  referred to  as "points".  Points
+	are numbered 0-15 within an individual port.
+
+
+       3. List of Files
+
+	The  library software  for  each  Acromag  I/O  board  is  in   a
+	correspondingly named subdirectory on the supplied media.  The
+	files which  make up the library for the  IP405 boards are stored
+	in the subdirectory named "IP405".
+
+	There  are two types of program files provided.   Library program
+	files  are the files which make up the "library". Support program
+	files contain example programs which  show how to use the library
+	programs.
+
+
+
+
+
+
+
+				  -1-
+
+
+
+
+
+
+
+
+
+	3.1 Library Program Files
+
+	The  following  files are included on the supplied  media  and
+	make up the actual "library" software.
+
+	     ip405.h   - include file
+	     rsts405.c - read ID
+	     rpnt405.c - read output point (from output data latch)
+	     rprt405.c - read output port  (from output data latch)
+	     wpnt405.c - write an output point
+	     wprt405.c - write an output port
+
+
+	3.2 Support Program Files
+
+	The  following files are included on the supplied media.   The
+	test program demonstrates how the library programs may be used.
+
+	     drvr405.c - test program to demonstrate library programs.
+         apc8620.h - include file for carrier support.
+         apc8620.c - source file for carrier support.
+
+
+	4. Software Installation
+
+	It  is strongly  advised that the user make a backup copy  of the
+	distribution   media  and  that  the  original  media  be  stored
+	in a safe place.
+
+	The  software is installed by simply copying the library files to
+	the  user's  work directory and compiling and  linking  with  the
+	user's application program.
+
+
+	5. Hardware Installation
+
+	For proper installation of each Acromag  board  the  user  should
+	refer to the appropriate user's manual.
+
+
+	6. Usage of the Library and Support Programs
+
+	The  software is installed  by copying the supplied files to your
+	work  directory and compiling  and linking  with your application
+	program.
+
+	It  is recommended that the user read the  User's Manual for  the
+	board  and  thoroughly  familiarize themselves with the hardware.
+	For a new user to become familiar with the Acromag Library it may
+	be  most  "straight forward"  to proceed in the following manner:
+
+
+
+
+
+
+				  -2-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            (a) Build and load the Acromag device driver module.
+
+                 i)   See  the  information  file  in  the device driver
+                 directory "/home/ip/dev8620/info.txt" for information
+                 about building and loading the device driver module.
+
+             (b) Build and execute the Acromag Library Demonstration.
+
+                  i)   Copy the Acromag Library routines from the "Ip405"
+                  directory of the source media to a new directory  under
+                  /home/ip/ip405.
+
+                  ii)  Copy   the  carrier   support  routines  from  the
+                  "carrier" directory  of the  source  media  to  a  new
+                  directory  under   /home/ip/carrier. 
+
+                  iii) Use the makefile to build the project.
+
+                  iv)  Launch  the  debugger,  "gdb a.out"  use  the  run 
+                  command start the program.
+
+                  v)   The  Acromag  Demonstration  program  menu  should
+                  appear  on  the  target processor's  console  terminal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				  -3-
+
+
+
+
+
+	The following menu is displayed:
+
+	     IP405 Library Demonstration Version A
+
+	     1. Exit this Program
+	     2. Set Carrier Address
+	     3. Set IP Slot Letter
+	     4. Read ID Command
+	     5. Read Output Point (from output data latch)
+	     6. Read Output Port  (from output data latch)
+	     7. Write Output Point
+	     8. Write Output Port
+
+	    Select:
+
+	To  perform digital  output and readback, follow this sequence of
+	main menu selections:
+
+	     Select 2: To set the carrier address.
+	     Select 3: To set the slot letter.
+	     Select 4: To read the board's ID ROM
+	     Select 5 or 6: To read data from the output port data latch.
+	     Select 7 or 8: To write output port data.
+
+	6.1 Explanation of Main Demonstration Menu
+
+	Following is an explanation  of each menu selection:
+
+	     1. Exit this Program
+
+	     This selection causes execution to be returned to the shell.
+
+	     2. Set Carrier Address
+
+	     This selection allows the user to set or change the  address
+	     of the carrier board.
+
+	     3. Set IP Slot Letter
+
+	     This  selection  allows the user to set or change  the  slot
+	     letter of the IP module being used.   The value entered here
+	     will automatically be entered in the Status Block structure.
+
+	     4. Read ID Command
+
+	     This  menu  selection will call the rsts405()  function  and
+	     pass  a pointer which points to the Status Block  structure.
+	     The  ID  ROM  information   is   read  from  the  board  and
+	     written into this structure by the rsts405()  function.  The
+	     information is then displayed by the example program.
+
+	     5. Read Output Point (from output data latch)
+
+	     This  command  is used to read a single output point in  any
+	     port.   The user is prompted to enter the port number (0  to
+	     2)  and  then  the point  number (0 to 15).   The  rpnt405()
+	     function is called and the result is displayed.
+
+
+
+				  -4-
+
+
+
+
+
+	     6. Read Output Port (from output data latch)
+
+	     This  command is used to read a port.  The user is  prompted
+	     to  enter the port number (0 to 2).   The  rprt405() library
+	     function is called and the result is displayed.
+
+	     7. Write Output Point
+
+	     This  command is used to write a single output point in  any
+	     port.   The user is prompted to enter the port number (0  to
+	     2), the point number (0 to 15), and the value to write (0 or
+	     1).  The wpnt405() function is called.
+
+	     8. Write Output Port
+
+	     This command is used to write a port.  The user is  prompted
+	     to enter the port number (0 to 2) and the value to write  (0
+	     to FFFF hex).  The wprt405() function is called.
+
+
+	7. Description of Library Programs.
+
+	Following  are descriptions of the programs and files which  make
+	up the library.
+
+	ip405.h - This  module  contains the  definitions  and structures
+	used by the library.
+
+	rsts405.c  - This  module is used to perform  the  "read ID PROM"
+	function.  A pointer to  the  Status  Block  is  passed  to  this
+	routine.  The routine  uses  a  pointer  within  the Status Block
+	to  reference   registers on  the  board  and  transfers  the  ID
+	information from the board to the Status Block.
+
+	  calling sequence:
+
+	     rsts405(ptr);
+	     where:
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Status Block structure.
+
+
+	rpnt405.c  -  This  module is used  to perform  the  "Read Output
+	Point" function for the IP405 board.   A  pointer  to  the  board
+	memory map  structure, the  port number, and the point number are
+	passed to  this  routine.  This information is used to  read  the
+	output point value from the board.
+
+	  calling sequence:
+
+	     status = rpnt405(ptr,port,point);
+	     where:
+		  status   - (long) Returned value of the output port.
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+				  Status Block structure.
+		  port     - (unsigned) Target output port number.
+		  point    - (unsigned) Target output point number.
+
+
+
+				  -5-
+
+
+
+
+
+
+
+
+	rprt405.c  -  This  module is  used  to perform  the "Read Output
+	Port"  function for  the IP405 board.  A  pointer  to  the  board
+	memory  map  structure  and  the  port number are passed to  this
+	routine.   This  information is used to read the output port data
+	value from the board.
+
+	  calling sequence:
+
+	     status = rprt405(ptr,port);
+
+	     where:
+		  status   - (long) Returned value of the output port.
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+				  Status Block structure.
+		  port     - (unsigned) Target output port number.
+
+
+	wpnt405.c  -  This module  is used to perform  the  "Write Output
+	Point" function for  the IP405 board.  A  pointer  to  the  board
+	memory  map  structure,  the  port  number,  the point number and
+	output point value to write  are passed  to this  routine.   This
+	information is used to write the output point value to the board.
+
+	  calling sequence:
+
+	     status = wpnt405(ptr,port,point,value);
+
+	     where:
+		  status   - (long) Returned error status of the function.
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+				  Status Block structure.
+		  port     - (unsigned) Target output port number.
+		  point    - (unsigned) Target output point number.
+		  value    - (unsigned) Value to write to output point.
+
+
+	wprt405.c  -  This module  is used to perform  the  "Write Output
+	Port"  function  for  the  IP405  board.  A pointer to  the board
+	memory map  structure,  the output port number, and port value to
+	write  are  passed  to this routine.  This information is used to
+	write the output port value to the board.
+
+	  calling sequence:
+
+	     status = wprt405(ptr,port,value);
+
+	     where:
+		  status   - (long) Returned error status of the function.
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+				  Status Block structure.
+		  port     - (unsigned) Target output port number.
+		  value    - (unsigned) Value to write to output port.
+
+
+
+
+
+				  -6-
+
+
+
+
+
+
+
+
+	8. Description of Support Programs
+
+	Following  is  a  description of the support  files  and  program
+	modules  which  provide  an example of the usage  of  the library
+	programs.
+
+ 
+	drvr405.c  - This is a program  which demonstrates the  usage  of
+	the library modules.   This program is menu driven and allows the
+	user  to  become familiar with the IP405 board  and  the  library
+	software.   The user may,  through  menu  selections,  read  from
+	and write to the board.
+
+    apc8620.c - This  file   provides   carrier   support   routines.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				  -7-
+

@@ -1,0 +1,1 @@
+cmd_/home/user/lbti/acromag/9500256n/dev8620/apc8620.ko := ld -r -m elf_x86_64  --build-id -o /home/user/lbti/acromag/9500256n/dev8620/apc8620.ko /home/user/lbti/acromag/9500256n/dev8620/apc8620.o /home/user/lbti/acromag/9500256n/dev8620/apc8620.mod.o

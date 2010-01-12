@@ -1,0 +1,1122 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    Acromag, Inc.
+                                  30765 S.Wixom Road
+                                    P.O. Box 437
+                              Wixom, Michigan 48393-7037
+
+                                Phone: (248)295-0310
+                                 FAX: (248)624-9234
+
+                               Linux Software Library
+                         Information File for the IP236 Board
+                                        V2.0
+                                      04/19/02
+
+
+
+
+               The  information  in this manual is subject to  change
+               without notice.   Acromag,  Inc.  makes no warranty of
+               any kind with regard to this material and accompanying
+               software,  including, but not limited to , the implied
+               warranties  of  merchantability  and  fitness  for   a
+               particular   purpose.    Acromag,   Inc.   assumes  no
+               responsibility for any errors that may appear in  this
+               manual and accompanying software.
+
+               See GPL.txt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1. Overview
+
+	This  "information"  file  contains a description of  the library
+	programs used for the following models of Acromag Industrial  I/O
+	Boards:
+
+	     IP236  FIFO Buffered 16-Bit Analog Output Board
+
+	2. Introduction
+
+	The  software  for  the  IP236  output board  is  implemented  as
+	a library of "C" functions.  This will  make  it     possible  to
+	utilize the board by simply linking  the user's  code	with  the
+	provided   library   and   making   function   calls   for   each
+	"command"  to be accomplished.  Most of the function  calls  will
+	require  a few parameters or the address of a parameter block  to
+	be  passed.   The  parameters will  include  the  board  address,
+	configuration  information,  data storage addresses,  and  status
+	information. These functions accomplish the following tasks:
+
+	     - Configuration
+	     - Read Status and ID
+	     - Write to DAC's
+	     - Trigger Output
+
+	Also  included  is  a demonstration program which shows  how  the
+	library routines are used.  It is a helpful program  to  use when
+	first  installing the board, checking  it  out, and  learning how
+	it works.
+
+	In this document, the term "channel" is used to describe one of 4
+	or 8 channels depending on the model that was purchased. Channels
+	are numbered 0 through 3 or 0 through 7.
+
+
+	3. List of Files
+
+	The library  software  for  each  Acromag  I/O  board  is  in	a
+	correspondingly named subdirectory on the supplied media.  The
+	files  which  make  up  the  library  for the  IP236   board  are
+	stored in the subdirectory named "IP236".
+
+	There  are two types of program files provided.   Library program
+	files are the files which make up the "library".  Support program
+	files contain example  programs which show how to use the library
+	programs.
+
+
+
+
+
+
+
+
+
+
+				   1
+
+
+
+
+
+
+
+	3.1 Library Program Files
+
+	The  following  files are included on the supplied  media  and
+	make up the actual "library" software.
+
+
+	     ip236.h	- include file
+	     cd236.c	- routine to calculate corrected data
+	     confg236.c - configure
+	     rmid236.c  - reads ID prom
+	     wro236.c	- routine to write output to DAC registers
+	     isr236.c   - interrupt handler
+	     rwcc236.c	- routine to read/write calibration coefficient
+			          locations
+
+	3.2 Support Program Files
+
+	The  following files are included on the supplied media.   The
+	test program demonstrates how  the library  programs may be used.
+
+	     drvr236.c - test program to  demonstrate  library  programs.
+	     apc8620.h - include file for carrier support.
+	     apc8620.c - source file for carrier support.
+
+
+	4. Software Installation
+
+	It  is strongly advised that the user make a backup copy  of  the
+	distribution  media and  that the original  media be  stored in a
+        safe place.
+
+	The  software is installed by simply copying the library files to
+	the  user's  work directory and compiling and  linking  with  the
+	user's application program.
+
+
+	5. Hardware Installation
+
+	For proper installation of each Acromag I/O board the user should
+	refer to the appropriate user's manual.
+
+
+	6. Usage of the Library and Support Programs
+
+	The  software is installed  by copying the supplied files to your
+	work  directory and compiling  and linking  with your application
+	program.
+
+        It  is recommended that the user read the  User's Manual for  the
+        board  and  thoroughly  familiarize themselves with the hardware.
+
+        For a new user to become familiar with the Acromag Library it may
+        be  most  "straight forward"  to proceed in the following manner:
+
+
+
+
+
+				   2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            (a) Build and load the Acromag device driver module.
+
+                 i)   See  the  information  file  in  the device driver
+                 directory "/home/ip/dev8620/info.txt" for information
+                 about building and loading the device driver module.
+
+
+             (b) Build and execute the Acromag Library Demonstration.
+
+
+                  i)   Copy the Acromag Library routines from the "Ip236"
+                  directory of the source media to a new directory  under
+                  /home/ip/ip236.
+
+
+                  ii)  Copy   the  carrier   support  routines  from  the
+                  "carrier" directory  of the  source  media  to  a  new
+                  directory  under   /home/ip/carrier. 
+
+
+                  iii) Use the makefile to build the project.
+
+
+                  iv)  Launch  the  debugger,  "gdb a.out"  use  the  run 
+                  command start the program.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				   3
+
+
+
+
+
+
+
+	The following menu is displayed for the IP236:
+
+	IP236 Library Demonstration  Rev. A
+
+	 1. Exit this Program
+	 2. Set Board Base Address
+	 3. Set IP Slot Letter
+	 4. Read Module I.D./Display Event Status
+	 5. Read Calibration Coefficients
+	 6. Set/Change Channel Number
+	 7. Issue Software Reset to Board
+	 8. Set Up Configuration Parameters
+	 9. Configure Channel
+	10. Enter/Change Output Values
+	11. Correct Output Values
+	12. Write Values to Output FIFO
+	13. N/A
+	14. Start/Stop Conversions
+	15. View Data Buffers & Offset/Gain Coefficients
+	16. Clear All Data Buffers
+	17. Modify Offset/Gain Coefficients
+	18. N/A
+
+	Select:    
+
+	To perform basic Analog Output functions, using the IP236  follow
+        this sequence of main menu selections:
+
+	    Select  2: To set the IP Module base address.
+	    Select  3: To set the IP Slot Letter.
+	    Select  5: To read the calibration coefficients.
+	    Select  6: To set/change channel number.
+	    Select  8: To set up the Configuration Parameters through the
+		       Configuration  Parameters  Menu.   See the section
+	           on the Configuration Parameters which follows.
+	    Select  9: To configure the channel.
+	    Select 10: To enter/change output values.  See the section on
+		       entering or changing output values  which follows.
+	    Select 11: To  correct  output   values  using  the  on-board
+		        calibration coefficients.
+	    Select 12: To write ideal/corrected data to the channel FIFO.
+		       Writing ideal or corrected data, performs the same
+	           basic function with the only difference being that
+	           writing corrected  data uses on-board  calibration
+	           coefficients that are more accurate.
+	    Select 14: To start or stop output conversions.
+
+
+
+
+
+
+
+
+
+
+
+
+				   4
+
+
+
+
+
+
+	To use  the example  interrupt  routines  provided,  follow  this
+	sequence of main menu selections:
+
+	    Select  2: To set the IP Module base address.
+	    Select  3: To set the IP Slot Letter.
+	    Select  5: To read the calibration coefficients.
+	    Select  6: To set/change channel number.
+	    Select  8: To set up the Configuration Parameters through the
+		       Configuration  Parameters  Menu.   See the section
+	           on the Configuration Parameters which follows.
+	    Select  9: To configure the channel.
+	    Select 10: To enter/change output values.  See the section on
+		       entering or changing output values  which follows.
+	    Select 11: To  correct  output   values  using  the  on-board
+		        calibration coefficients.
+	    Select 12: To write ideal/corrected data to the channel FIFO.
+	    Select 13: To attach an interrupt exception handler.
+	    Select 14: To start or stop output conversions.
+
+
+   NOTE: Because of the  large number  of  variables  associated with the
+	 above choices, it is impossible to give  a  definitive  set  up.
+	 Therefore it is up to the user to read the manual and understand
+	 the choices available to them.
+
+
+
+
+
+
+	6.1 Explanation of the Main Demonstration Menu
+
+	The following is an explanation of each menu selection:
+
+	     1. Exit this Program
+
+	     This  selection detaches the interrupt handlers used by  the
+	     demonstration  program (if  any  are  attached)  and  causes
+	     execution to be returned to the shell.
+
+	     2. Set IP Module Base Address
+
+	     This  selection  allows the user to set or change  the  base
+	     address of the IP module being used.  The value entered here
+	     will  automatically  be  entered in the  Configuration Block
+	     structure.
+
+	     3. Set IP Slot Letter
+
+	     This  selection  allows the user to set or change  the  slot
+	     letter of the IP module being used.   The value entered here
+	     will  automatically  be  entered in the  Configuration Block
+	     structure.
+
+
+
+
+
+
+				   5
+
+
+
+
+
+
+	     4. Read ID and Event Status Command
+
+	     This  menu  selection will call the rmid236()  function  and
+	     pass  a pointer  which points  to  the  Configuration  Block
+	     structure. The  current  status information is read from the
+	     board  and  written  into  this  structure  by the rmid236()
+	     function.  The status information is  then displayed  by the
+	     calling routine. This selection also reads and displays  the
+	     interrupt event status.
+
+	     5. Read Calibration Coefficients
+
+	     This selection causes a read of the calibration coefficients
+	     and stores them in an array.
+
+	     6. Set/Change Channel Number
+
+	     This menu  selection allows the user to change or select the
+	     current channel number to be configured or updated.
+
+	     7. Issue Software Reset to Board
+
+	     This menu  selection  cause a  software  reset, clearing all
+	     configuration  registers  and  stopping  any  I/O  activity.
+	     However, all  configuration  information  will  be  saved in
+	     software  and  the  board  can  be easily reconfigured using
+	     selection 8 for each configured channel.
+
+	     8. Set Up Configuration Parameters
+
+	     This  selection will cause the Configuration  Parameter Menu
+	     to be displayed.	Through that menu it will be  possible to
+	     enter values into  the  various  structure  members  of  the
+	     Configuration Parameters structure.   See section 6.2 on the
+	     Configuration Parameter Menu which follows.
+
+	     9. Configure Channel
+
+	     This  menu selection will call the  cnfg236()  function  and
+	     pass  a  pointer  to  the  Configuration  Block   structure.
+	     Information in the Configuration  Block  is  written  to the
+	     board for the selected channel.
+
+	     10. Enter/Change Output Values
+
+	     This  selection  allows  the user a means to enter or change
+ 	     the  output  voltage  values array for the selected channel.
+	     See section  6.3  about the Enter/Change  Output Values Menu
+ 	     which follows.
+
+
+
+
+
+
+
+
+
+
+				   6
+
+
+
+
+
+
+	     11. Correct Output Values
+
+	     This selection uses on-board calibration coefficients to
+	     correct  previously  entered ideal data values and place
+	     the  result  in  the  corrected  data  array.  Use  this
+	     selection to obtain greatest accuracy.
+
+	     12. Write Values to Output
+
+	     This selection will allow the user to write the contents
+	     of the  ideal data array  or the corrected data array to
+	     the  currently  selected  channel's  output  FIFO.   Use
+ 	     corrected data to obtain greatest accuracy.
+
+	     13. N/A
+
+	     This  menu selection is not implemented at this time.
+
+
+
+
+	     14. Start/Stop Conversions
+
+	     This  menu  selection  allows  the  user to  start  or  stop
+	     conversions for the selected channel.
+
+	     15. View Ideal/Corrected Data, Gain/Offset Coefficients
+
+	     Displays ideal, corrected,  and calibration coefficients for
+	     the selected channel.
+
+	     16. Clear Data Buffers
+
+	     Clears  the  ideal,  corrected, and calibration coefficients
+	     values from their respective buffers.
+
+	     17. Modify Offset/Gain Coefficients
+
+	     Selection 17 will cause the Modify Offset/Gain  Coefficients
+	     Menu to be displayed.  Through that menu it will be possible
+	     calculate,  enter,  and write Offset/Gain Coefficient values
+	     to the selected channel.    See  section  6.4 on  the Modify
+	     Offset/Gain Coefficients Menu which follows.
+
+	     18. N/A
+
+	     This  menu selection is not implemented at this time.
+
+
+
+
+
+
+
+
+
+
+
+
+				   7
+
+
+
+
+
+
+
+	6.2  Explanation of the Set Up Configuration Parameters Menu
+
+	This  menu  is  displayed  when  the  user  selects  the  "Set Up
+	Configuration Parameters" item  from the Main Demonstration Menu.
+	Through the selections provided, it will be possible for the user
+	to enter Configuration Parameters for the selected channel.
+
+		    Channel 0 Configuration Parameters
+
+		     1. Return to Previous Menu
+		     2. Channel Range:         1
+		     3. Channel Mode:          1
+		     4. Trigger Control:       0
+		     5. Empty Threshold:       2
+		     6. Prescaler:             3f
+		     7. Counter:               7fff
+		     8. Interrupt Vector:      B0
+		     9. Interrupt Enable:      1
+
+		    Select:
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to Previous Menu
+
+	     This selection returns  the user  to the Main  Demonstration
+	     Menu.
+
+
+	     2. Channel Range
+
+	     This  menu  item  allows the  user to enter the output range
+	     jumper  setting  for the selected channel from the following
+	     choices:
+
+                 0. Bipolar 5 Volts
+                 1. Bipolar 10 Volts
+                 2. Unipolar 10 Volts
+
+
+	     3. Channel Mode
+
+	     This selection allows the user to  make a  choice  from  the
+	     following:
+  
+                 0. Single Conversion
+                 1. Continuous Conversion
+                 2. External Trigger Input
+
+
+
+
+
+
+
+
+
+
+				   8
+
+
+
+
+
+
+
+	     4. Trigger Control
+
+	     This selection allows the user to  make a  choice  from  the
+	     following:
+
+                 0. External Input;
+                 1. External Output
+
+
+	     5. Empty Threshold
+
+	     This selection allows the user to  make a  choice  from  the
+	     following:
+ 
+                 0. Disabled
+                 1. Four Values Remaining
+                 2. Sixteen Values Remaining
+                 3. Sixty-four Values Remaining
+ 
+
+	     6. Prescaler
+
+	     This  selection allows the user to  enter a  prescaler value
+	     from 0x35 to 0xFF.
+
+
+	     7. Counter
+
+	     This selection allows the user to enter a counter value from
+	     0x0001 to 0xFFFF.
+
+
+	     8. Set Interrupt Vector
+
+	     This selection allows the  user to  examine and  change  the
+	     interrupt vector.   A single  interrupt vector  is shared by
+	     all channels.
+
+
+	     9. Interrupt Enable
+
+	     This selection allows the user to  make a  choice  from  the
+	     following:
+
+	         0. Interrupts Disabled
+	         1. Interrupts Enabled
+
+
+
+
+
+
+
+
+
+
+
+
+				   9
+
+
+
+
+
+
+
+	6.3  Explanation of the Enter/Change Output Values Menu
+
+	This  menu  is  displayed  when  the  user  selects  the  "Enter/
+	Change Output Values" item  from  the  Main  Demonstration  Menu.
+	Through the selections provided, it will be possible for the user
+	to enter Configuration Parameters for the selected channel.
+
+		Channel: 0
+
+		 1. Return to Previous Menu
+		 2. Enter Value(s)
+
+		Select:2
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to Previous Menu
+
+	     This selection returns the user to the previous Menu.
+
+	     2. Enter Value(s)
+
+	     This menu  item allows the  user to enter the output values.
+	     Values are placed  into a buffer.   Starting with the  first
+	     one, the current  value is shown.     Entering  a new  value
+	     followed by  a carriage  return will  overwrite the  current
+ 	     value. Entering just a carriage return will move to the next
+	     location in the buffer. Spacebar followed by carriage return
+	     will backup one location.   Finally, to  quit, and return to
+	     the previous menu, type Q followed  by  a  carriage  return.
+	     These special keys are summarized below.
+
+             XX.XXXX cr  overwrites current value, moves to next location
+             cr          moves to next location
+             sp cr       moves to previous location
+             Q cr        quits, returns to previous menu
+
+	     After quitting,  the  count parameter  for  the  input  buffer
+ 	     contains the number of values in the buffer.  This number  is
+	     determined by the last position accessed before quitting.
+
+
+	     Enter desired voltage: ie: 1.25, follow each with CR 128 max)
+		 CR alone moves to next value,
+		 SPACE CR moves to previous value,
+		 Q CR quits:
+
+		[00]: 1.000000
+		[01]: 1.250000
+		[02]: 1.500000
+		[03]: 1.750000
+		[04]: 2.000000
+		[05]: 2.250000
+		[06]: 0.000000 q
+
+
+
+
+				  10
+
+
+
+
+
+
+
+	6.4  Explanation of the Modify Offset/Gain Coefficients Menu
+
+	This  menu  is  displayed  when  the  user  selects  the  "Modify
+	Offset/Gain Coefficients" item from the Main Demonstration  Menu.
+	Through the selections provided, it will be possible for the user
+	to calculate offset and gain coefficients,  modify the offset/gain
+	array for the selected channel,  and write the selected channel's
+	offset and gain coefficients to on-board EEPROM.
+
+        *****************************************************************
+        * NOTE: IT IS RECOMMENDED THAT  THESE  VALUES  NOT  BE  CHANGED *
+        * UNLESS   YOU  ARE   FAMILIAR  WITH   MAKING  THESE  TYPES  OF *
+        * CALCULATIONS AND HAVE A DMM CAPABLE  OF 16-BIT RESOLUTION AND *
+        * ACCURACY.  IF THESE  VALUES  ARE  CHANGED  AND  NOT  PROPERLY *
+        * CALCULATED, THE BOARD WILL HAVE TO BE RETURNED TO THE FACTORY *
+        * FOR CALIBRATION.                                              *
+        *****************************************************************
+
+		Channel: 0
+
+		 1. Return to Previous Menu
+		 2. Change Channel Number
+		 3. Change Bipolar   5 Offset & Gain
+		 4. Change Bipolar  10 Offset & Gain
+		 5. Change Unipolar 10 Offset & Gain
+		 6. Calculate Offset & Gain from End Points
+		 7. Write All Current Channel Coefficients to EEPROM
+
+		Select:1
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to Previous Menu
+
+	     This selection returns the user to the previous Menu.
+
+	     2. Change Channel Number
+
+	     This menu  selection allows the user to change or select the
+	     current channel number to be configured or updated.
+
+	     3. Change Bipolar 5 Offset & Gain
+
+	     This menu selection allows the user to change the offset and
+	     gain array values  for the selected channel's bipolar 5 Volt
+	     range.
+
+	     4. Change Bipolar 10 Offset & Gain
+
+	     This menu selection allows the user to change the offset and
+	     gain array values for the selected channel's bipolar 10 Volt
+	     range.
+
+
+
+
+
+
+				  11
+
+
+
+
+
+
+	     5. Change Unipolar 10 Offset & Gain
+
+	     This menu selection allows the user to change the offset and
+	     gain  array  values for the  selected  channel's unipolar 10
+	     Volt range.
+
+	     6. Calculate Offset & Gain from End Points
+
+	     This menu selection allows the user to calculate  offset and
+	     gain values from user supplied end point measurements.
+
+	     7. Write All Current Channel Coefficients to EEPROM
+
+	     This menu selection allows the user to write  the offset and
+	     gain array coefficients for all three ranges for the selected
+	     channel to on-board EEPROM.
+
+
+
+
+	7. Description of Library Programs.
+
+	Following  are descriptions of the programs and files which  make
+	up the library.
+
+	ip236.h - This module contains  the  definitions  and  structures
+	used by the library.
+
+	cnfg236.c - This  file  contains  routines  that  build and write
+ 	values to the control register.
+
+	byte build_control - Builds control  register  image from current
+ 	settings found in the configuration data structure.
+
+	  calling sequence:
+
+	    control_value = build_control(c_blk);
+
+	     where:
+		  control_value (byte) bit pattern representing
+                                 configuration settings.
+
+		  c_blk(struct conf_blk *) - pointer to config structure.
+
+
+
+
+	void cnfg236 - Configures channel for operation.
+                       Calls reset_channel() and build_control().
+
+	  calling sequence:
+
+	    cnfg236(c_blk);
+
+	     where:
+		  c_blk(struct conf_blk *) - pointer to config structure.
+
+
+
+				  12
+
+
+
+
+
+
+	rmid236.c - This file contains the  routine  that  reads  the  ID
+	PROM.
+
+	 void rmid236 - This routine is used to read  the boards ID prom.
+
+	  calling sequence:
+
+	   rmid236(c_blk)
+
+	     where:
+		  c_blk  - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+
+
+
+	cd236.c - This file contains a routine that calculates the
+        corrected count values from the ideal count values and the
+        offset and gain coefficients for all channels.
+	NOTE:  The ideal count value must be calculated and stored
+        in the configuration block structure for this  function to
+        work properly.
+
+
+	 void cd236 - This routine calculates the corrected data.
+
+	  calling sequence:
+
+	   cd236(c_blk)
+
+	     where:
+		  c_blk  - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+
+
+
+	wro236.c -This file contains the  routines  that  write  the  DAC
+	registers, start conversions, and stop conversions.  Following is
+	a list of routines contained in this file and a brief description
+	of each:
+
+
+	 void wro236 - This  is  the routine  that  actually  writes  the
+	 desired values into the DAC register.
+
+	  calling sequence:
+
+	   wro230(c_blk, channel)
+
+	     where:
+		  c_blk  - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  channel - (int) channel number to write
+
+
+
+
+				  13
+
+
+
+
+
+
+	 void reset_channel - Generates a software reset for the selected
+  	 channel stopping all activity.
+
+	  calling sequence:
+
+	   reset_channel(c_blk)
+
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+
+
+
+	 void reset_board - Generates  a  software reset for all channels
+         stopping all activity.
+
+	  calling sequence:
+
+	   reset_board(c_blk)
+
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+
+
+
+	 void stop_multiple - Generates a software reset for the selected
+  	 channels stopping all activity.
+
+	  calling sequence:
+
+	   stop_multiple(c_blk, mask )
+
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  mask - (byte) Bit  mask of  channels  to stop, a '1' in
+ 		  a channels mask position will reset the channel. 
+
+
+
+
+	 void start_single - Generates a software start  for the selected
+  	 channel.
+
+	  calling sequence:
+
+	   start_single(c_blk)
+
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+
+
+
+				   14
+
+
+
+
+
+
+	 void start_multiple - Generates a software start for the selected
+  	 channels..
+
+	  calling sequence:
+
+	   start_multiple(c_blk, mask )
+
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  mask - (byte) Bit  mask of  channels to start, a '1' in
+ 		  a channels mask position will start the channel. 
+
+
+
+	rwcc236.c - This file contains the routines that read  and  write
+        the calibration  coefficients stored in EEPROM.   Following  is a
+        list of  routines  contained in this file and a brief description
+        of each:
+
+	 int ReadOffsetError - This routine is used  to  read  the offset 
+	 coefficient from the board.
+
+	  calling sequence:
+
+	   Offset = ReadOffsetError(c_blk, channel, Range)
+
+	     where:
+		  Offset - (int) The returned offset coefficient.
+
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  channels(int) - The channel number to read.
+
+		  Range(int) - The channel's jumper range selection.
+
+
+
+	 int ReadGainError - This routine is used  to  read  the gain 
+	 coefficient from the board.
+
+	  calling sequence:
+
+	   Gain = ReadGainError(c_blk, channel, Range)
+
+	     where:
+		  Gain - (int) The returned gain coefficient.
+
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  channels(int) - The channel number to read.
+
+		  Range(int) - The channel's jumper range selection.
+
+
+
+				   15
+
+
+
+
+
+
+
+	int WriteCoefficients - This routine  is used  to  write the gain 
+	and offset coefficients to EEPROM on the board.
+        *****************************************************************
+        * NOTE: IT IS RECOMMENDED THAT  THESE  VALUES  NOT  BE  CHANGED *
+        * UNLESS   YOU  ARE   FAMILIAR  WITH   MAKING  THESE  TYPES  OF *
+        * CALCULATIONS AND HAVE A DMM CAPABLE  OF 16-BIT RESOLUTION AND *
+        * ACCURACY.  IF THESE  VALUES  ARE  CHANGED  AND  NOT  PROPERLY *
+        * CALCULATED, THE BOARD WILL HAVE TO BE RETURNED TO THE FACTORY *
+        * FOR CALIBRATION.                                              *
+        *****************************************************************
+	  calling sequence:
+
+	   void WriteCoefficients(c_blk, channel, offset, gain, Range)
+	     where:
+		  c_blk - (struct conf_blk *)  This is a pointer to  the
+		  Configuration Block structure.
+
+		  channels(int) - The channel number to write.
+
+		  offset - (word) The offset value.
+
+		  gain - (word) The gain value.
+
+		  Range(int) - The channel's jumper range selection.
+
+
+
+
+
+
+
+
+	8. Description of Support Programs
+
+	Following  is  a  description of the support  files  and  program
+	modules  which  provide  examples  for  the  use  of  the library
+	programs.
+
+	drvr236.c  - This  is a program which demonstrates the  usage  of
+	the library modules.   This program is menu driven and allows the
+	user to become familiar with the  IP236  board  and  the  library
+	software.   The user may,  through menu  selections,   configure,
+	read from, and write to the board.
+
+	apc8620.c - This  file   provides   carrier   support   routines.
+
+
+
+
+
+
+
+
+
+
+
+
+
+				   16
+
+
+

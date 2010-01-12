@@ -1,0 +1,789 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                                   Acromag, Inc.
+                                  30765 S.Wixom Road
+                                   P.O. Box 437
+                              Wixom, Michigan 48393-7037
+
+                                Phone: (248)295-0310
+                                 FAX: (248)624-9234
+
+                               Linux Software Library
+                          IP1k110/IP1k125/IP-EP20x Boards
+                                        V2.0
+                                      08/22/03
+
+
+
+
+               The  information  in this manual is subject to  change
+               without notice.   Acromag,  Inc.  makes no warranty of
+               any kind with regard to this material and accompanying
+               software,  including, but not limited to , the implied
+               warranties  of  merchantability  and  fitness  for   a
+               particular   purpose.    Acromag,   Inc.   assumes  no
+               responsibility for any errors that may appear in  this
+               manual and accompanying software.
+
+               See GPL.txt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1. Overview
+
+	This  "information"  file  contains a description of  the library
+	programs used for the following  Acromag  Industrial  I/O  Board:
+
+	     IP1k110 Reconfigurable Digital I/O Board
+	     IP1k125 Digital I/O Board
+	     IP-EP20x Boards
+
+	2. Introduction
+
+	The software  for  the IP1k110/125 I/O  board  is  implemented as
+	a library of "C" functions.  This will  make  it     possible  to
+	utilize the board by simply linking  the user's  code	with  the
+	provided   library   and   making   function   calls   for   each
+	"command"  to be accomplished.  Most of the function  calls  will
+	require  a few parameters or the address of a parameter block  to
+	be  passed.   The  parameters will  include  the  board  address,
+	configuration  information,  data storage addresses,  and  status
+	information. These functions accomplish the following tasks:
+
+	     - Configuration
+	     - Read Status and ID
+	     - Read Input
+	     - Write Output
+	     - Change of State and Level Interrupts
+
+	Also  included  is  a demonstration program which shows  how  the
+	library routines are used.  It is also a helpful program  to  use
+	when first installing the board, checking  it  out, and  learning
+	how it works.
+
+	In this document, the term "port" is used to describe a block  of
+	16 channels  numbered 0 through 15.    Channels 0-15   correspond
+	to port 0,  16-31 to port 1,  and 32-47  to port 2.    Individual
+	channels are referred to as "points".    Points are numbered 0-15
+	within an individual port.
+
+
+	3. List of Files
+
+	The  library  software  for  each  Acromag  I/O  board  is  in  a
+	correspondingly  named  subdirectory  on the supplied media.  The
+	files which make up the library for the IP1k110/125 and  IP-EP20x
+	board are stored in the subdirectory named "IP1k110".    The user
+	selects the board type  by modifing the defines found in the file
+	"ip1k110.h".  Device  and array type are user selectable.
+
+	There  are two types of program files provided.   Library program
+	files are the files which make up the "library".  Support program
+	files contain example programs which show how to use the library.
+
+
+
+
+
+
+				   1
+
+
+
+
+
+
+	3.1 Library Program Files
+
+	The  following  files are included on the supplied  media  and
+	make up the actual "library" software.
+
+	     ip1k110.h   - include file
+	     cnfg1k110.c - configure
+	     rsts1k110.c - read status and ID
+	     rpnt1k110.c - read an input point
+	     rprt1k110.c - read an input port
+	     wpnt1k110.c - write an output point
+	     wprt1k110.c - write an output port
+	     pldcfg1k110.c - writes PLD configuration to module 
+
+
+	3.2 Support Program Files
+
+	The  following files are included on the supplied media.   The
+	test program demonstrates how  the library  programs may be used.
+
+	     drvr1k110.c - test program to demonstrate library programs.
+	     apc8620.h - include file for carrier support.
+	     apc8620.c - source file for carrier support.
+
+	     hfilegenerator.c - source for .hex to .h conversion program.
+                 
+
+
+	4. Software Installation
+
+	It  is strongly advised that the user make a backup copy  of  the
+	distribution  media  and  that   the  original  media  be  stored
+	in a safe place.
+
+	The  software is installed by simply copying the library files to
+	the  user's  work directory and compiling and  linking  with  the
+	user's application program.
+
+
+	5. Hardware Installation
+
+	For proper installation of each Acromag I/O board the user should
+	refer  to  the appropriate user's manual.
+
+
+	6. Usage of the Library and Support Programs
+
+	The  software is installed  by copying the supplied files to your
+	work  directory and compiling  and linking  with your application
+	program.
+	It  is recommended that the user read the  User's Manual for  the
+	board  and  thoroughly  familiarize themselves with the hardware.
+	For a new user to become familiar with the Acromag Library it may
+	be  most  "straight forward"  to proceed in the following manner:
+
+
+
+
+
+				   2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             (a) Build and load the Acromag device driver module.
+
+                 i)   See  the  information  file  in  the device driver
+                 directory "/home/ip/dev8620/info.txt" for information
+                 about building and loading the device driver module.
+
+             (b) Build and execute the Acromag Library Demonstration.
+
+                  i) Copy the Acromag Library routines from the "ip1k110"
+                  directory of the source media to a new directory  under
+                  /home/ip/ip1k110.
+
+                  ii)  Copy   the  carrier   support  routines  from  the
+                  "carrier" directory  of the  source  media  to  a  new
+                  directory  under   /home/ip/carrier. 
+
+                  iii) Use the makefile to build the project.
+
+                  iv)  Launch  the  debugger,  "gdb a.out"  use  the  run 
+                  command start the program or ./a.out.
+
+                  v)   The  Acromag  Demonstration  program  menu  should
+                  appear  on  the  target processor's  console  terminal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				   3
+
+
+
+
+	The following menu is displayed:
+
+	     IP1k1xx Library Demonstration Version A
+
+             1. Exit this Program
+             2. Set Carrier Base Address
+             3. Set IP Slot Letter
+             4. PLD Configuration
+             5. Set Up Configuration Block Parameters
+             6. Configure Board Command
+             7. Read Status Command and ID
+             8. N/A
+             9. N/A
+            10. Read Input Point
+            11. Read Input Port
+            12. Write Output Point
+            13. Write Output Port
+
+            Select:
+
+	To  perform  digital  I/O,  follow   this sequence of  main  menu
+	selections:
+
+	     Select 2: To set the IP Module base address.
+	     Select 3: To set the IP Slot Letter.
+	     Select 4: To download the PLD Configuration.
+	     Select 5: To set Up Configuration Parameters.
+	     Select 6: To configure the board.
+	     Select 7: To read the board's status and ID.
+	     Select 10 or 11: To read input.
+	     Select 12 or 13: To write output
+
+	To use  the example  interrupt  routines  provided,  follow  this
+	sequence of main menu selections:
+
+	     Select 2: To set the IP module base address.
+	     Select 3: To set the IP Slot Letter.
+	     Select 4: To download the PLD Configuration.
+	     Select 8: To  attach   an   interrupt   exception   handler.
+	     Select 5: To  set  up the Configuration  Block  through  the
+		       Configuration  Block  Parameter Menu.   This  Menu
+		       will  allow  the  user to set  the  board  up  for
+		       interrupts.  See section 6.2 for  details  on  the
+	           Configuration Block Parameter Menu.
+	     Select 6: To  configure  the board using the information  in
+		       the Configuration Block.
+	     Select 7: To  confirm  the  configuration  by  reading   the
+		       board's status information.
+	     Select 10, or 11: To read port data.
+	     Select 12, or 13: To write port data.
+
+	The  interrupt service  routine  will  read  the interrupt status
+	registers and  place  the contents in  the status block structure
+	to  indicate  that  an  interrupt has  been  serviced.  For level
+	interrupts, the interrupting  bit is disabled  in  the  interrupt
+	enable register.
+
+
+
+
+
+				   4
+
+
+
+
+
+	6.1 Explanation of Main Demonstration Menu
+
+	Following is an explanation of each menu selection:
+
+	     1. Exit this Program
+
+	     This  selection detaches the interrupt handlers used by  the
+	     demonstration  program (if  any  are  attached)  and  causes
+	     execution to be returned to the shell.
+
+	     2. Set Carrier Base Address
+
+	     This  selection  allows the user to set or change  the  base
+	     address of the Carrier being used.    The value entered here
+	     will  automatically  be  entered in  the  Configuration  and
+	     Status Block structures.
+
+	     3. Set IP Slot Letter
+
+	     This  selection  allows the user to set or change  the  slot
+	     letter of the IP module being used.   The value entered here
+	     will  automatically  be  entered in  the  Configuration  and
+	     Status Block structures.
+
+	     4. Download PLD Configuration
+
+	     This  selection  allows  the  user  to download  a custom or
+	     Acromag supplied PLD  Configuration to  the IP1k110  module.
+
+	     5. Set Up Configuration Block Parameters
+
+	     This  selection will cause the Configuration Block Parameter
+	     Menu to be displayed.  Through that menu it will be possible
+	     to  enter values into the various structure members  of  the
+	     Configuration Block structure.   See section 6.2 for details
+	     on the Configuration Block Parameter Menu which follows.
+
+	     6. Configure Board Command
+
+	     This menu selection will call the  cnfg1k110() function  and
+	     pass  a  pointer  which points to  the  Configuration  Block
+	     structure.    Information  in  the  Configuration  Block  is
+	     written to the board.
+
+	     7. Read Status & ID Command
+
+	     This menu  selection will call the rsts1k110() function  and
+	     pass  a pointer which points to the Status Block  structure.
+	     The  current status information is read from the  board  and
+	     written into this structure by the rsts1k110() function. The
+	     status information is then displayed by the example program.
+
+	     8. N/A
+
+	     This menu selection is not implemented at this time.
+
+
+
+
+
+                                   5
+
+
+
+
+
+	     9. N/A
+
+	     This menu selection is not implemented at this time.
+
+
+	     10. Read Input Point
+
+	     This  command  is used to read a  single  input  point.  The
+	     user enters the  port  number  (0 or 1)  and  point   number
+	     (0  to  15).  The rpnt1k110() function  is  called, then the
+	     result is displayed.
+
+	     11. Read Input Port
+
+	     This  command is used to read a port.   The user  enters the
+	     port number (0 or 1).   The rprt1k110()  function is called,
+	     then result is displayed.
+
+	     12. Write Output Point
+
+	     This  command is  used  to  write  a  single  output  point.
+	     The user enters the port number (0 or 1), the  point  number
+	     (0 to 15),  and  the  value  to  write  (0 or 1),  then  the
+	     wpnt1k110() function is called.
+
+	     13. Write Output Port
+
+	     This command is used to write a port of 16 points.
+	     The user enters the port number (0 or 1).	   The  user  is
+	     prompted  to  enter  the  value  to  write  (0 to FFFF hex),
+	     then wprt1k110() function is called.
+
+	6.2  Explanation of the Configration Block Parameter Menu
+
+	This menu  is  displayed  when  the  user  selects  the  "Set  Up
+	Configuration Block" menu item from the Main Demonstration  Menu.
+	Through  the  Configuration  Block  Parameter  Menu  it  will  be
+	possible  for  the  user to enter values into  the  Configuration
+	Block  structure.   The Configuration Block structure is used  by
+	the cnfg1k110() function.  Following is the "Set Up Configuration
+	Block Parameters" menu.  All numbers are displayed and entered in
+	hexadecimal.
+
+	     Configuration Block Parameters
+
+             1. Return to Previous Menu
+             2. Board Pointer:  EFFF0000
+             3. Parameter Mask:     FF
+             4. Select Model:       00
+             5. Int. Status:        00
+             6. Int. Enable:        00
+             7. Int. Polarity:      00
+             8. Int. Type:          00
+             9. Data Direction:    000
+            10. Int. Vector:        C0
+            11. Module Reset:       00
+
+	    Select:
+
+
+                                   6
+
+
+
+
+
+
+	     (Note  that the values in the menu will differ depending  on
+	     your system.)
+
+	     Following is an explanation of each menu selection:
+
+	     1. Return to Previous Menu
+
+	     This selection returns  the user  to the Main  Demonstration
+	     Menu.
+
+	     2. Board Pointer
+
+	     The  board  base  address is displayed,  however,  the  base
+	     address  can  only be changed through the Main Demonstration
+	     Menu.   This  paramter  is  automatically	 updated  in  the
+	     Configuration Block when the user selects  the  "Set   Board
+	     Base  Address"  item  in	the  Main   Demonstration   Menu.
+
+	     3. Parameter Mask
+
+	     This  selection  allows the user to enter a  value  for  the
+	     Parameter	 Mask.	 The  Parameter  Mask  is  used  by   the
+	     cnfg1k110() function to determine which parameters to update
+	     in  various  registers of the board.   The  individual  bits
+	     correspond to various parameters in the Configuration Block.
+	     A  "1"  in  the bit position means  to  use  the  respective
+	     parameter  field to update a register on the board.   A  "0"
+	     means not to use the parameter field.
+
+		  bit 0  - Select Model parameter.
+		  bit 1  - Interrupt Status Registers parameter.
+		  bit 2  - Interrupt Enable Registers Parameter.
+		  bit 3  - Interrupt Polarity Registers Parameter.
+		  bit 4  - Interrupt Type Registers Parameter.
+		  bit 5  - Interrupt Vector Register Parameter.
+		  bit 6  - Data Direction Register Parameter.
+		  bit 7  - Module Reset Parameter.
+
+	     4. Select Model
+
+	     This  selection  allows the user to enter a value  that will
+	     select the model I/O mix.
+
+                      Model              Value
+                  -------------          -----
+                  Uninitialized            0      (power up default)
+                  Ip1k110-0024             1      (24 differential)
+                  Ip1k110-2412             2      (24 TTL & 12 diff)
+                  Ip1k110-4800             3      (48 TTL )
+
+
+
+
+
+
+
+
+
+
+                                   7
+
+
+
+
+
+	     5. Interrupt Status
+
+	     This  selection  allows the user to enter a  value  for  the
+	     Interrupt	 Status   Register.   This  register is typically
+	     written  to by an interrupt  handler  routine  to  clear  an
+	     interrupt  after  the  interrupt  input  stimulus  has  been
+	     removed.	The user may access the  register  here  in order
+	     to see its function.  A "1" in any bit position  will  clear
+	     the corresponding  interrupt input bit.  A  "0"  in  any bit
+	     position will have no effect.
+
+	     6. Interrupt Enable
+
+	     This  selection  allows the user to enter a  value  for  the
+	     Interrupt	 Enable  Register.   Each  bit	 corresponds   to
+	     an interrupt input point in the enable register.	 A "1" in
+	     any bit position will allow interrupts to  be  generated  by
+	     the corresponding point.	 A  "0"  disables  interrupts for
+	     the  corresponding  interrupt  input  point.
+
+	     7. Interrupt Polarity
+
+	     This  selection  allows the user to enter a  value  for  the
+	     Interrupt  Polarity  Register.   A value of  "0"  in  a  bit
+	     position  allows  an  interrupt  to  be   generated  when  a
+	     corresponding input point is below the threshold.    A value
+	     of "1" in a bit position allows an interrupt to be generated
+	     when a corresponding input point  is  above  the  threshold.
+
+	     8. Interrupt Type
+
+	     This  selection  allows  the user to enter a value  for  the
+	     Interrupt Type Register.  A "0" in a bit position  means  an
+	     interrupt  will be  generated when  the corresponding  input
+	     channel level specified by the  interrupt polarity  register
+	     occurs.   A "1" in a bit position means an interrupt will be
+	     generated when the corresponding input channel changes state.
+
+	     9. Data Direction
+
+	     This selection allows the user to enter a value for the Data
+	     Direction Register.   A "0" in a bit position configures the
+	     I/O bit as an input bit.  A "1" in a bit position configures
+	     the I/O bit as an output bit.   Note: Direction control bits
+	     vary with the model number selected, see instruction manual.
+
+	     10. Interrupt Vector
+
+	     This  selection  allows  the user to enter a value  for  the
+	     exception vector.
+
+	     11. Module Reset
+
+	     This  selection  allows  the  user  to enter a Module Reset
+	     flag.   A  value of "1" will causes a reset of the  module.
+	     A value of "0" means do not reset the module.
+
+
+
+
+                                   8
+
+
+
+
+
+	7. Description of Library Programs.
+
+	Following  are descriptions of the programs and files which  make
+	up the library.
+
+	ip1k110.h - This module contains the  definitions and  structures
+	used by the library.
+
+	cnfg1k110.c  -  This  module   performs   the   "Configure Board"
+	function for the IP1k110 board.   A  pointer to the Configuration
+	Block is passed to this routine.  The routine  will use a pointer
+	within the Configuration Block to  reference the registers on the
+	board.  Based on flag bits in the  Parameter  Mask  word  in  the
+	Configuration Block, the board  will be  configured  and  various
+	registers will be  updated  with  new information which  will  be
+	transfered from the Configuration Block.
+
+	  calling sequence:
+
+	     cnfg1k110(ptr);
+
+	     where:
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Configuration Block structure.
+
+
+	rsts1k110.c  - This module is used to  perform  the  "Read Status
+	and ID" function for the IP1k110 board.	A  pointer to the  Status
+	Block  is  passed to this routine.  The routine  uses  a  pointer
+	within  the Status Block to reference registers on the board  and
+	transfers   information  from  the  board to  the  Status  Block.
+
+	  calling sequence:
+
+	     rsts1k110(ptr);
+
+	     where:
+		  ptr  - (structure  pointer)  This is a pointer  to  the
+		  Status Block structure.
+
+
+	rpnt1k110.c  -  This module is used to perform  the  "Read  Input
+	Point" function for the IP1k110  board.	A  pointer to  the  board
+	memory  map  structure, the port number and  the point number are
+	passed to this  routine.  This information is  used  to  read the
+	point value from the board.
+
+	  calling sequence:
+
+	     status = rpnt1k110(map_ptr,port,point);
+
+	     where:
+		  status   - (long) Returned value of the input point.
+		  map_ptr  - (structure  pointer)  Pointer to the board
+			     memory map structure.
+		  port	   - (unsigned) Target input port number.
+		  point    - (unsigned) Target input point number.
+
+
+
+                                   9
+
+
+
+
+
+	rprt1k110.c  -  This  module is used to perform the  "Read  Input
+	Port" function for the IP1k110  board.   A  pointer to the  board
+	memory map structure and port number (0 or 1) are passed to  this
+	routine.   This  information  is used to read the input port data
+	value from the board.
+
+	  calling sequence:
+
+	     status = rprt1k110(map_ptr,port);
+
+	     where:
+		  status   - (long) Returned value of the input port.
+		  map_ptr  - (structure  pointer)  Pointer to  the  board
+			     memory map structure.
+		  port	   - (unsigned) Target input port number.
+
+
+
+	wpnt1k110.c  -  This module is used to perform  the "Write Output
+	Point" function for the IP1k110 board.    A pointer to the  board
+	memory  map  structure,  the port  number,  the point  number and
+	point value to write are passed to this routine.
+
+	  calling sequence:
+
+	     status = wpnt1k110(map_ptr,port,point,value);
+
+	     where:
+		  status   - (long) Returned error status of function.
+		  map_ptr  - (structure  pointer)  Pointer to  the  board
+			     memory map structure.
+		  port	   - (unsigned) Target output port number.
+		  point    - (unsigned) Target output point number.
+		  value    - (unsigned) Value to write to output point.
+
+
+
+	wprt1k110.c  -  This module is used to perform the  "Write Output
+	Port" function for the IP1k110  board.   A pointer to  the  board
+	memory map structure, the port number and port value to write are
+	passed  to this routine.
+
+	  calling sequence:
+
+	     status = wprt1k110(map_ptr,port,value);
+
+	     where:
+		  status   - (long) Returned error status of function.
+		  map_ptr  - (structure  pointer)  Pointer to  the  board
+			     memory map structure.
+		  port	   - (unsigned) Target output port number.
+		  value    - (unsigned) Value to write to output port.
+
+
+
+
+
+
+
+
+                                   10
+
+
+
+
+
+	pldcfg1k110.c  -   This   module   is   used   to   initiate  the
+	configuration of the PLD  and  test it's  success by  reading the
+	model  code  byte  from  the  ID PROM.    If  the PLD  is already
+	configured and in user mode  then  the re-enable  code is written
+	to place the PLD  into configuration mode.  The PLD  will then be
+	re-configured.
+
+
+	  calling sequence:
+
+             status = PLDConfig(c_blk);
+
+             Where:
+                  c_blk (pointer to structure)
+                         Pointer to configuration block structure
+
+
+
+
+	8. Description of Support Programs
+
+	Following  is  a  description of the support  files  and  program
+	modules  which  provide  examples  for  the  use  of  the library
+	programs.
+
+	apc8620.c - This  file   provides   carrier   support   routines.
+
+	drvr1k110.c  - This is a program which demonstrates the usage  of
+	the library modules.   This program is menu driven and allows the
+	user to become familiar with the  IP1k110  board  and the library
+	software.   The user may,  through menu  selections,   configure,
+	read from and write to the board.
+
+	hfilegenerator.c - Source  code for  the  hfilegenerator program.
+	The  source  code  may  be  compiled  to  produce  an  executable
+	hfilegenerator program on  most  operating  systems.
+	The  user  could  modify this  routine to write the  data  stream
+	directly to the Ip1k110 module.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   11
