@@ -1,50 +1,50 @@
 
 /*
-{+D}
-   SYSTEM:          Acromag PCI carrier
+  {+D}
+  SYSTEM:          Acromag PCI carrier
 
-   MODULE NAME:     dev8620.c
+  MODULE NAME:     dev8620.c
 
-   VERSION:         N
+  VERSION:         N
 
-   CREATION DATE:   07/03/02
+  CREATION DATE:   07/03/02
 
-   CODED BY:        FJM
+  CODED BY:        FJM
 
-   ABSTRACT:        8620 carrier device.
+  ABSTRACT:        8620 carrier device.
 
-   CALLING
-	SEQUENCE:
+  CALLING
+  SEQUENCE:
 
-   MODULE TYPE:
+  MODULE TYPE:
 
-   I/O RESOURCES:
+  I/O RESOURCES:
 
-   SYSTEM
-	RESOURCES:
+  SYSTEM
+  RESOURCES:
 
-   MODULES
-	CALLED:
+  MODULES
+  CALLED:
 
-   REVISIONS:
+  REVISIONS:
 
- DATE      BY       PURPOSE
--------- ----  ------------------------------------------------
-07/03/02 FJM   Fixed unregister bug in cleanup_module().
-09/10/03 FJM   Red Hat Linux 9 update.
-12/22/04 FJM   Fedora core FC3 update.
-01/20/05 FJM   Extended carrier function library interface.
-05/25/05 FJM   Add multiple carrier support.
-12/06/06 FJM   Fedora core FC6 update.
-01/11/07 FJM   Add support x86_64
-06/12/07 FJM   Fedora 7 update.
-05/23/08 FJM   Fedora 8/9 update.
-04/01/09 FJM   Add blocking_start_convert also
---/--/--       change carrier size from 4096 to 1024 and 
---/--/--       remove 'IRQF_DISABLED' from request_irq().
-08/02/09 FJM   Add configuration register access.
+  DATE      BY       PURPOSE
+  -------- ----  ------------------------------------------------
+  07/03/02 FJM   Fixed unregister bug in cleanup_module().
+  09/10/03 FJM   Red Hat Linux 9 update.
+  12/22/04 FJM   Fedora core FC3 update.
+  01/20/05 FJM   Extended carrier function library interface.
+  05/25/05 FJM   Add multiple carrier support.
+  12/06/06 FJM   Fedora core FC6 update.
+  01/11/07 FJM   Add support x86_64
+  06/12/07 FJM   Fedora 7 update.
+  05/23/08 FJM   Fedora 8/9 update.
+  04/01/09 FJM   Add blocking_start_convert also
+  --/--/--       change carrier size from 4096 to 1024 and 
+  --/--/--       remove 'IRQF_DISABLED' from request_irq().
+  08/02/09 FJM   Add configuration register access.
  
-{-D}
+  {-D}
 */
 
 
@@ -93,7 +93,7 @@
 #include "../ip480/ip480.h"
 #include "../ip482/ip482.h"
 
-
+#define IRQF_SHARED SA_SHIRQ
 
 #define DEVICE_NAME	"apc8620_"	/* the name of the device */
 #define MAJOR_NUM	46
@@ -120,79 +120,79 @@ struct pt_regs;
 static int
 open( struct inode *inode, struct file *fp )
 {
-   int minor;
+  int minor;
 
-   minor = inode->i_rdev & 0xf;
-   if( minor > (MAX_CARRIERS - 1))
-	   return( -ENODEV );
+  minor = inode->i_rdev & 0xf;
+  if( minor > (MAX_CARRIERS - 1))
+    return( -ENODEV );
   
-   if( open_dev[minor] )
-	   return( -EBUSY );
+  if( open_dev[minor] )
+    return( -EBUSY );
 
-   open_dev[minor] = 1;
+  open_dev[minor] = 1;
 
-   return( 0 );
+  return( 0 );
 }
 
 static int
 release( struct inode *inode, struct file *fp )
 {
-   int minor;
+  int minor;
 
-   minor = inode->i_rdev & 0xf;
-   if( minor > (MAX_CARRIERS - 1))
-	   return( -ENODEV );
+  minor = inode->i_rdev & 0xf;
+  if( minor > (MAX_CARRIERS - 1))
+    return( -ENODEV );
 
-   if( open_dev[minor] )
-   {
-	   open_dev[minor] = 0;
-	   return( 0 );
-   }
-   return( -ENODEV );
+  if( open_dev[minor] )
+    {
+      open_dev[minor] = 0;
+      return( 0 );
+    }
+  return( -ENODEV );
 }
 
 
 static ssize_t
 read( struct file *fp, char *buf, size_t length, loff_t *offset )
 { 
-	unsigned long adata, ldata, idata;
-	unsigned short sdata;
-	unsigned char cdata;
+  unsigned long adata, ldata, idata;
+  unsigned short sdata;
+  unsigned char cdata;
 
-	get_user( adata, (unsigned long *)buf );		/* pickup address */
-	switch( length )
-	{
-		case 1:	/* 8 bit */
-		   cdata = readb( (void *) adata );
-		   ldata = ( unsigned long )cdata;		/* convert to long */
-		break;
-		case 2:	/* 16 bit */
-		   sdata = readw( (void *) adata );
-		   ldata = ( unsigned long )sdata;		/* convert to long */
-		break;
-		case 4:	/* 32 bit */
-		   ldata = readl( (void *) adata );
-		break;
+  get_user( adata, (unsigned long *)buf );		/* pickup address */
+  switch( length )
+    {
+    case 1:	/* 8 bit */
+      cdata = readb( (void *) adata );
+      ldata = ( unsigned long )cdata;		/* convert to long */
+      break;
+    case 2:	/* 16 bit */
+      sdata = readw( (void *) adata );
+      ldata = ( unsigned long )sdata;		/* convert to long */
+      break;
+    case 4:	/* 32 bit */
+      ldata = readl( (void *) adata );
+      break;
 
 
-		/* Read 32 bit from configuration space */
-		case 0x40:	/* Read 32 bit from configuration space */
-		   get_user( adata, (unsigned long *)adata );		/* pickup EE address */
-		   get_user( idata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup instance index */
+      /* Read 32 bit from configuration space */
+    case 0x40:	/* Read 32 bit from configuration space */
+      get_user( adata, (unsigned long *)adata );		/* pickup EE address */
+      get_user( idata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup instance index */
 
-		   if( p86xxBoard[idata] )
-			pci_read_config_dword( p86xxBoard[idata], (int)adata, (u32*)&ldata ); /* read config space */
-		   else
-			ldata = 0;
-		break;
+      if( p86xxBoard[idata] )
+	pci_read_config_dword( p86xxBoard[idata], (int)adata, (u32*)&ldata ); /* read config space */
+      else
+	ldata = 0;
+      break;
 
-		default:
-		    cdata = sdata = adata = ldata = idata = 0;
-		    return( -EINVAL );
-		break;
-	}
-	put_user( ldata,(unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* update user data */
-	return( length );
+    default:
+      cdata = sdata = adata = ldata = idata = 0;
+      return( -EINVAL );
+      break;
+    }
+  put_user( ldata,(unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* update user data */
+  return( length );
 }
 
 
@@ -200,44 +200,44 @@ read( struct file *fp, char *buf, size_t length, loff_t *offset )
 static ssize_t
 write( struct file *fp, const char *buf, size_t length, loff_t *offset )
 { 
-	unsigned long adata, ldata, idata;
+  unsigned long adata, ldata, idata;
 
-	get_user( adata, (unsigned long *)buf );				/* pickup address */
-	get_user( ldata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup data */
-	switch( length )
-	{
-		case 1:	/* 8 bit */
-		   writeb( (int)ldata, (void *)adata );
-		break;
-		case 2:	/* 16 bit */
-		   writew( (int)ldata, (void *)adata );
-		break;
-		case 4:	/* 32 bit */
-		   writel( (int)ldata, (void *)adata );
-		break;
-		case 8:	/* 16 bit blocking start convert */
-           wqc = 0;       /* indicate waiting */
-		   writew( (int)ldata, (void *)adata );
-           wait_event_interruptible(ain_queue, wqc);
-           wqc = 2;       /* indicate complete */ 
-/* printk("after wait_event_interruptible\n");*/
-		break;
+  get_user( adata, (unsigned long *)buf );				/* pickup address */
+  get_user( ldata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup data */
+  switch( length )
+    {
+    case 1:	/* 8 bit */
+      writeb( (int)ldata, (void *)adata );
+      break;
+    case 2:	/* 16 bit */
+      writew( (int)ldata, (void *)adata );
+      break;
+    case 4:	/* 32 bit */
+      writel( (int)ldata, (void *)adata );
+      break;
+    case 8:	/* 16 bit blocking start convert */
+      wqc = 0;       /* indicate waiting */
+      writew( (int)ldata, (void *)adata );
+      wait_event_interruptible(ain_queue, wqc);
+      wqc = 2;       /* indicate complete */ 
+      /* printk("after wait_event_interruptible\n");*/
+      break;
 
 
-		/* Write 32 bit to configuration space */
-		case 0x40:	/* Write 32 bit to configuration space */
-		   get_user( adata, (unsigned long *)adata );		/* pickup EE address */
-           get_user( idata, (unsigned long *)(buf+(2*(sizeof(unsigned long)))) );	/* pickup instance index */
+      /* Write 32 bit to configuration space */
+    case 0x40:	/* Write 32 bit to configuration space */
+      get_user( adata, (unsigned long *)adata );		/* pickup EE address */
+      get_user( idata, (unsigned long *)(buf+(2*(sizeof(unsigned long)))) );	/* pickup instance index */
 
-		   if( p86xxBoard[idata] )
-			pci_write_config_dword( p86xxBoard[idata], (int)adata, (u32)ldata ); /* write config space */
-		break;
+      if( p86xxBoard[idata] )
+	pci_write_config_dword( p86xxBoard[idata], (int)adata, (u32)ldata ); /* write config space */
+      break;
 
-		default:
-		    return( -EINVAL );
-		break;
-	}
-    return( length );
+    default:
+      return( -EINVAL );
+      break;
+    }
+  return( length );
 }
 
 
@@ -245,37 +245,37 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
 static int
 ioctl( struct inode *inode, struct file *fp, unsigned int cmd, unsigned long arg)
 {
-    unsigned long ldata;
-    int i;
-	switch( cmd )
+  unsigned long ldata;
+  int i;
+  switch( cmd )
+    {
+    case 0:	/* reserved for future use */
+    case 1:
+    case 2:
+    case 3:
+    case 4:/* return IP MEM address */
+      for(i = 0; i < MAX_CARRIERS; i++)                   /* get all boards */
 	{
-		case 0:	/* reserved for future use */
-		case 1:
-		case 2:
-		case 3:
-		case 4:/* return IP MEM address */
-            for(i = 0; i < MAX_CARRIERS; i++)                   /* get all boards */
-            {
-               ldata = ( unsigned long )ip_mem_address[i];      /* convert to long */
-               put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
-            }    
-		break;
-		case 5:/* return IP I/O address */
-            for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
-            {
-               ldata = ( unsigned long )carrier_address[i];      /* convert to long */
-               put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
-            }    
-		break;
-		case 6:/* return IRQ number */
-            for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
-            {
-               ldata = ( unsigned long )board_irq[i];            /* convert IRQ to long */
-               put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
-            }
-		break;
+	  ldata = ( unsigned long )ip_mem_address[i];      /* convert to long */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
+	}    
+      break;
+    case 5:/* return IP I/O address */
+      for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
+	{
+	  ldata = ( unsigned long )carrier_address[i];      /* convert to long */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
+	}    
+      break;
+    case 6:/* return IRQ number */
+      for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
+	{
+	  ldata = ( unsigned long )board_irq[i];            /* convert IRQ to long */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
 	}
-	return( cmd );
+      break;
+    }
+  return( cmd );
 }
 
 
@@ -304,380 +304,380 @@ static struct file_operations apc8620_ops = {
 static irqreturn_t
 apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
 { 
-   volatile unsigned short dummyWord, nValue;
-   volatile PCI_BOARD_MEMORY_MAP* pPCICard;
-   int int_status;
-   struct isr_data idata;		/* ISR routine handler structure */			
-   struct handler_data hdata;	/* wrapper structure for isr_data */
+  volatile unsigned short dummyWord, nValue;
+  volatile PCI_BOARD_MEMORY_MAP* pPCICard;
+  int int_status;
+  struct isr_data idata;		/* ISR routine handler structure */			
+  struct handler_data hdata;	/* wrapper structure for isr_data */
 
 
 
-   hdata.hd_ptr = (char *)&idata;/* get address of isr_data struct to handler data struct */
-   int_status = 0;	/* indicate interrupt not handled */
+  hdata.hd_ptr = (char *)&idata;/* get address of isr_data struct to handler data struct */
+  int_status = 0;	/* indicate interrupt not handled */
  
-   if( open_dev[0] )	/*	Check the 1st board open_dev[0] */
-   {
-     pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[0];
-     nValue = readw((unsigned short*)&pPCICard->intPending);
+  if( open_dev[0] )	/*	Check the 1st board open_dev[0] */
+    {
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[0];
+      nValue = readw((unsigned short*)&pPCICard->intPending);
 
-	 if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
-	 {
-/*
-printk("\nopen_dev[0] pending %X",nValue);
-*/
-		/* Check each IP slot for an interrupt pending */
-		/* Call interrupt handler for any pending interrupts */
+      if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
+	{
+	  /*
+	    printk("\nopen_dev[0] pending %X",nValue);
+	  */
+	  /* Check each IP slot for an interrupt pending */
+	  /* Call interrupt handler for any pending interrupts */
 
-	    if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot A ISR code goes in here */
-			isr_408( (void *)&hdata );
+	      /* Slot A ISR code goes in here */
+	      isr_408( (void *)&hdata );
 	
-		   /* read IP A Interrupt Select Space */
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
-		   int_status = 1;
-		}			
+	      /* read IP A Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
+	      int_status = 1;
+	    }			
 
-	    if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot B ISR code goes in here */
-/*			isr_340( (void *)&hdata ); */
-			/* read IP B Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
-			int_status = 1;
-		}			
+	      /* Slot B ISR code goes in here */
+	      /*			isr_340( (void *)&hdata ); */
+	      /* read IP B Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot C ISR code goes in here */
-/*			isr_330( (void *)&hdata ); */
-			/* read IP C Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
-			int_status = 1;
-		}			
+	      /* Slot C ISR code goes in here */
+	      /*			isr_330( (void *)&hdata ); */
+	      /* read IP C Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot D ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP D Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
-			int_status = 1;
-		}			
+	      /* Slot D ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP D Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot E ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP E Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
-			int_status = 1;
-		}
-	 }
-   }
-
-
-
-   if( open_dev[1] )		/* Check the 2nd board open_dev[1] */
-   {
-     pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[1];
-     nValue = readw((unsigned short*)&pPCICard->intPending);
-
-	 if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
-	 {
-/*
-printk("\nopen_dev[1] pending %X",nValue);
-*/
-		/* Check each IP slot for an interrupt pending */
-		/* Call interrupt handler for any pending interrupts */
-
-	    if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot A ISR code goes in here */
-		   isr_408( (void *)&hdata );
-
-		   /* read IP A Interrupt Select Space */
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
-		   int_status = 1;
-		}			
-
-	    if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot B ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP B Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
-			int_status = 1;
-		}			
-
-		if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot C ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP C Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
-			int_status = 1;
-		}			
-
-		if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot D ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP D Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
-			int_status = 1;
-		}			
-
-		if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot E ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP E Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
-			int_status = 1;
-		}
-	 }
-   }
+	      /* Slot E ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP E Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
+	      int_status = 1;
+	    }
+	}
+    }
 
 
 
+  if( open_dev[1] )		/* Check the 2nd board open_dev[1] */
+    {
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[1];
+      nValue = readw((unsigned short*)&pPCICard->intPending);
 
-   if( open_dev[2] )		/* Check the 3rd board open_dev[2] */
-   {
-     pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[2];
-     nValue = readw((unsigned short*)&pPCICard->intPending);
+      if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
+	{
+	  /*
+	    printk("\nopen_dev[1] pending %X",nValue);
+	  */
+	  /* Check each IP slot for an interrupt pending */
+	  /* Call interrupt handler for any pending interrupts */
 
-	 if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
-	 {
-/*
-printk("\nopen_dev[2] pending %X",nValue);
-*/
-		/* Check each IP slot for an interrupt pending */
-		/* Call interrupt handler for any pending interrupts */
+	  if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
 
-	    if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
+	      /* Slot A ISR code goes in here */
+	      isr_408( (void *)&hdata );
 
-			/* Slot A ISR code goes in here */
-		   isr_408( (void *)&hdata );
+	      /* read IP A Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
+	      int_status = 1;
+	    }			
 
-		   /* read IP A Interrupt Select Space */
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
-		   int_status = 1;
-		}			
+	  if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
 
-	    if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
+	      /* Slot B ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP B Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
+	      int_status = 1;
+	    }			
 
-			/* Slot B ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP B Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
-			int_status = 1;
-		}			
+	  if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
 
-		if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
+	      /* Slot C ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP C Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
+	      int_status = 1;
+	    }			
 
-			/* Slot C ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP C Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
-			int_status = 1;
-		}			
+	  if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
 
-		if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
+	      /* Slot D ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP D Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
+	      int_status = 1;
+	    }			
 
-			/* Slot D ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP D Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
-			int_status = 1;
-		}			
+	  if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
 
-		if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
-
-			/* Slot E ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP E Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
-			int_status = 1;
-		}
-	 }
-   }
+	      /* Slot E ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP E Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
+	      int_status = 1;
+	    }
+	}
+    }
 
 
 
 
-   if( open_dev[3] )		/* Check the 4th board open_dev[3] */
-   {
-     pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[3];
-     nValue = readw((unsigned short*)&pPCICard->intPending);
+  if( open_dev[2] )		/* Check the 3rd board open_dev[2] */
+    {
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[2];
+      nValue = readw((unsigned short*)&pPCICard->intPending);
 
-	 if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
-	 {
-/*
-printk("\nopen_dev[3] pending %X",nValue);
-*/
-		/* Check each IP slot for an interrupt pending */
-		/* Call interrupt handler for any pending interrupts */
+      if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
+	{
+	  /*
+	    printk("\nopen_dev[2] pending %X",nValue);
+	  */
+	  /* Check each IP slot for an interrupt pending */
+	  /* Call interrupt handler for any pending interrupts */
 
-	    if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot A ISR code goes in here */
-		   isr_408( (void *)&hdata );
+	      /* Slot A ISR code goes in here */
+	      isr_408( (void *)&hdata );
 
-		   /* read IP A Interrupt Select Space */
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
-		   dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
-		   int_status = 1;
-		}			
+	      /* read IP A Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
+	      int_status = 1;
+	    }			
 
-	    if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot B ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP B Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
-			int_status = 1;
-		}			
+	      /* Slot B ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP B Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot C ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP C Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
-			int_status = 1;
-		}			
+	      /* Slot C ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP C Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot D ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP D Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
-			int_status = 1;
-		}			
+	      /* Slot D ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP D Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
+	      int_status = 1;
+	    }			
 
-		if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
-		{
-			/* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
-			idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
-			idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
+	  if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
 
-			/* Slot E ISR code goes in here */
-			/*     isr_xxx( (void *)&hdata );*/
-			/* read IP E Interrupt Select Space */
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
-			dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
-			int_status = 1;
-		}
-	 }
-   }
+	      /* Slot E ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP E Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
+	      int_status = 1;
+	    }
+	}
+    }
 
- if( int_status )
-   {
-       if( wqc == 0)            /* waiting for a blocked start convert AND an interrupt from the analog input board */
-       {
-         wqc = 1;               /* when received, change the condition to true... */
-         wake_up_interruptible(&ain_queue);	/* ... and wake the blocked write */
-       }
-       return( IRQ_HANDLED);
-   }
-   else
-       return( IRQ_NONE);
+
+
+
+  if( open_dev[3] )		/* Check the 4th board open_dev[3] */
+    {
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[3];
+      nValue = readw((unsigned short*)&pPCICard->intPending);
+
+      if( nValue & CARRIER_INT_MASK )/* non-zero if this carrier is interrupting */
+	{
+	  /*
+	    printk("\nopen_dev[3] pending %X",nValue);
+	  */
+	  /* Check each IP slot for an interrupt pending */
+	  /* Call interrupt handler for any pending interrupts */
+
+	  if(nValue & IPA_INT0_PENDING || nValue & IPA_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_A_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_A_MEM_OFFSET];/* this slots mem address */
+
+	      /* Slot A ISR code goes in here */
+	      isr_408( (void *)&hdata );
+
+	      /* read IP A Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotAInt1);
+	      int_status = 1;
+	    }			
+
+	  if(nValue & IPB_INT0_PENDING || nValue & IPB_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_B_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_B_MEM_OFFSET];/* this slots mem address */
+
+	      /* Slot B ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP B Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotBInt1);
+	      int_status = 1;
+	    }			
+
+	  if(nValue & IPC_INT0_PENDING || nValue & IPC_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_C_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_C_MEM_OFFSET];/* this slots mem address */
+
+	      /* Slot C ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP C Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotCInt1);
+	      int_status = 1;
+	    }			
+
+	  if(nValue & IPD_INT0_PENDING || nValue & IPD_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_D_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_D_MEM_OFFSET];/* this slots mem address */
+
+	      /* Slot D ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP D Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotDInt1);
+	      int_status = 1;
+	    }			
+
+	  if(nValue & IPE_INT0_PENDING || nValue & IPE_INT1_PENDING)
+	    {
+	      /* This slot is pending... load up the interrupt data structure and call the ISR for this slot*/
+	      idata.slot_io_address = (unsigned long)&((char *)pPCICard)[SLOT_E_IO_OFFSET];/* this slots I/O address */
+	      idata.slot_mem_address = (unsigned long)&((char *)pPCICard)[SLOT_E_MEM_OFFSET];/* this slots mem address */
+
+	      /* Slot E ISR code goes in here */
+	      /*     isr_xxx( (void *)&hdata );*/
+	      /* read IP E Interrupt Select Space */
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt0);
+	      dummyWord = readw((unsigned short*)&pPCICard->slotEInt1);
+	      int_status = 1;
+	    }
+	}
+    }
+
+  if( int_status )
+    {
+      if( wqc == 0)            /* waiting for a blocked start convert AND an interrupt from the analog input board */
+	{
+	  wqc = 1;               /* when received, change the condition to true... */
+	  wake_up_interruptible(&ain_queue);	/* ... and wake the blocked write */
+	}
+      return( IRQ_HANDLED);
+    }
+  else
+    return( IRQ_NONE);
 }
 
 
@@ -699,69 +699,69 @@ init_module( void )
 
   p8620 = NULL;
   for( i = 0, j = 0; i < MAX_CARRIERS; i++ )
-  {
-/*  Use pci_find_device() for earlier versions FC3/4/5/6 */
-/*  p8620 = ( struct pci_dev *)pci_find_device( 0x10B5, 0x1024, p8620 ); */
-    p8620 = ( struct pci_dev *)pci_get_device( 0x10B5, 0x1024, p8620 );
-    if( p8620 )
+    {
+      /*  Use pci_find_device() for earlier versions FC3/4/5/6 */
+      /*  p8620 = ( struct pci_dev *)pci_find_device( 0x10B5, 0x1024, p8620 ); */
+      p8620 = ( struct pci_dev *)pci_get_device( 0x10B5, 0x1024, p8620 );
+      if( p8620 )
 	{
 	  p86xxBoard[i] = p8620;
 	  carrier_address[i] = (unsigned long)p8620->resource[2].start;
-/*  Used in earlier versions FC3/4/5/6/7/8 */
-/*      carrier_address[i]= (unsigned long)__ioremap( carrier_address[i], 4096, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
-      carrier_address[i]= (unsigned long)ioremap_nocache( carrier_address[i], 1024); /* no cache! */
+	  /*  Used in earlier versions FC3/4/5/6/7/8 */
+	  /*      carrier_address[i]= (unsigned long)__ioremap( carrier_address[i], 4096, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
+	  carrier_address[i]= (unsigned long)ioremap_nocache( carrier_address[i], 1024); /* no cache! */
 
-      if( carrier_address[i] )
-	  {
-        memset( &devnamebuf[0], 0, sizeof(devnamebuf));
-        memset( &devnumbuf[0], 0, sizeof(devnumbuf));
-        strcpy(devnamebuf, DEVICE_NAME);
-        sprintf(&devnumbuf[0],"%d",i);
-        strcat(devnamebuf, devnumbuf);
-        board_irq[i] = p8620->irq;
-        ret_val = pci_enable_device(p8620);
-/*  Used for earlier versions FC3/4/5/6 */
-/*		ret_val = request_irq ( board_irq[i], apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] ); */
-/*  Used for FC7 */
-/*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] );*/
-/*  Used for FC8/9/10 */
-/*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );*/
+	  if( carrier_address[i] )
+	    {
+	      memset( &devnamebuf[0], 0, sizeof(devnamebuf));
+	      memset( &devnumbuf[0], 0, sizeof(devnumbuf));
+	      strcpy(devnamebuf, DEVICE_NAME);
+	      sprintf(&devnumbuf[0],"%d",i);
+	      strcat(devnamebuf, devnumbuf);
+	      board_irq[i] = p8620->irq;
+	      ret_val = pci_enable_device(p8620);
+	      /*  Used for earlier versions FC3/4/5/6 */
+	      /*		ret_val = request_irq ( board_irq[i], apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] ); */
+	      /*  Used for FC7 */
+	      /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] );*/
+	      /*  Used for FC8/9/10 */
+	      /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );*/
 
-		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
 
-        printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i],ret_val);
+	      printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i],ret_val);
 
-		/* 8620a may have an additional BAR register if it supports IP memory */
-		/* if the additional region is present map it into memory */
-        ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	/* get IP mem region if present */
-        if( ip_mem_address[i] )
+	      /* 8620a may have an additional BAR register if it supports IP memory */
+	      /* if the additional region is present map it into memory */
+	      ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	/* get IP mem region if present */
+	      if( ip_mem_address[i] )
 		{
-/*  Used in earlier versions FC3/4/5/6/7/8 */
-/*	      ip_mem_address[i] = (unsigned long)__ioremap( ip_mem_address[i], 0x4000000, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
-	      ip_mem_address[i] = (unsigned long)ioremap_nocache( ip_mem_address[i], 0x4000000 ); /* no cache! */
+		  /*  Used in earlier versions FC3/4/5/6/7/8 */
+		  /*	      ip_mem_address[i] = (unsigned long)__ioremap( ip_mem_address[i], 0x4000000, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
+		  ip_mem_address[i] = (unsigned long)ioremap_nocache( ip_mem_address[i], 0x4000000 ); /* no cache! */
 
-          if( ip_mem_address[i] )
-              printk("%s mapped   MEM=%08lX\n",devnamebuf, (unsigned long)ip_mem_address[i]);
+		  if( ip_mem_address[i] )
+		    printk("%s mapped   MEM=%08lX\n",devnamebuf, (unsigned long)ip_mem_address[i]);
 
 		}
-        j++;
-	  }
+	      j++;
+	    }
 	}
-	else
-		break;
-  }
+      else
+	break;
+    }
   if( j )	/* found at least one device */
-  {
-	ret_val = register_chrdev ( MAJOR_NUM, DEVICE_NAME, &apc8620_ops );
+    {
+      ret_val = register_chrdev ( MAJOR_NUM, DEVICE_NAME, &apc8620_ops );
 
-	if( ret_val < 0)
+      if( ret_val < 0)
 	{
-		printk(DEVICE_NAME);
-	    printk(" Failed to register error = %d\n", ret_val);
+	  printk(DEVICE_NAME);
+	  printk(" Failed to register error = %d\n", ret_val);
 	}
-	else
-		return( 0 );
-  }
+      else
+	return( 0 );
+    }
   return( -ENODEV );
 }
 
@@ -775,30 +775,30 @@ cleanup_module( void )
 
 
   if( ret_val >= 0 )
-  {
-    unregister_chrdev( MAJOR_NUM, DEVICE_NAME );
-    for( i = 0; i < MAX_CARRIERS; i++ )
+    {
+      unregister_chrdev( MAJOR_NUM, DEVICE_NAME );
+      for( i = 0; i < MAX_CARRIERS; i++ )
 	{
-      if( carrier_address[i] )
-	  {
-        memset( &devnamebuf[0], 0, sizeof(devnamebuf));
-        memset( &devnumbuf[0], 0, sizeof(devnumbuf));
-        strcpy(devnamebuf, DEVICE_NAME);
-        sprintf(&devnumbuf[0],"%d",i);
-        strcat(devnamebuf, devnumbuf);
+	  if( carrier_address[i] )
+	    {
+	      memset( &devnamebuf[0], 0, sizeof(devnamebuf));
+	      memset( &devnumbuf[0], 0, sizeof(devnumbuf));
+	      strcpy(devnamebuf, DEVICE_NAME);
+	      sprintf(&devnumbuf[0],"%d",i);
+	      strcat(devnamebuf, devnumbuf);
 
-        free_irq( board_irq[i], (void *)carrier_address[i] );
-        iounmap( (void *)carrier_address[i] );
-        printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i]);
+	      free_irq( board_irq[i], (void *)carrier_address[i] );
+	      iounmap( (void *)carrier_address[i] );
+	      printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i]);
 
-   	    if( ip_mem_address[i] )
+	      if( ip_mem_address[i] )
 		{
-	       iounmap( (void *)ip_mem_address[i] );
-           printk("%s unmapped MEM=%08lX\n",devnamebuf,(unsigned long)ip_mem_address[i]);
+		  iounmap( (void *)ip_mem_address[i] );
+		  printk("%s unmapped MEM=%08lX\n",devnamebuf,(unsigned long)ip_mem_address[i]);
 		}
-	  }
+	    }
 	}
-  }
+    }
 }
 
 MODULE_LICENSE("GPL and additional rights");

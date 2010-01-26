@@ -18,6 +18,4 @@ default:
 endif
 
 clean:
-	rm -f ./*.o ./*~ ./*.ko
-
-
+	rm -f ./*.o ./*~ ./*.ko ./.*o.cmd
