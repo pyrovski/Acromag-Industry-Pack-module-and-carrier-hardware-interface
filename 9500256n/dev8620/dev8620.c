@@ -93,7 +93,8 @@
 #include "../ip480/ip480.h"
 #include "../ip482/ip482.h"
 
-#define IRQF_SHARED SA_SHIRQ
+// not necessary in 2.6.26
+//#define IRQF_SHARED SA_SHIRQ
 
 #define DEVICE_NAME	"apc8620_"	/* the name of the device */
 #define MAJOR_NUM	46
@@ -727,7 +728,10 @@ init_module( void )
 	      /*  Used for FC8/9/10 */
 	      /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );*/
 
-	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      //ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+
+	      // CentOS 4.5, tested on 2.6.26:
+	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
 
 	      printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i],ret_val);
 
