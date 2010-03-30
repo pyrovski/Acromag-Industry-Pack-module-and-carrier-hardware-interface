@@ -43,6 +43,7 @@
   --/--/--       change carrier size from 4096 to 1024 and 
   --/--/--       remove 'IRQF_DISABLED' from request_irq().
   08/02/09 FJM   Add configuration register access.
+  01/--/10 PEB   Update for CentOS 4.5
  
   {-D}
 */

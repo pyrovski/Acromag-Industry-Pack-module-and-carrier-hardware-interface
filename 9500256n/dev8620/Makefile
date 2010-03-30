@@ -15,6 +15,10 @@ PWD := $(shell pwd)
 
 default:
 	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+
+install: default
+	install -m 0755 -d /lib/modules/$(shell uname -r)/extra/
+	install -m 0644 $(MODULE) /lib/modules/$(shell uname -r)/extra/
 endif
 
 clean:
