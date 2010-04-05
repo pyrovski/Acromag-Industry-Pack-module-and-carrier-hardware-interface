@@ -61,7 +61,7 @@
   float max, min, half_span, v, dv, rad, midpoint, mem_span;
 
 
-{
+int main(){
 
 
 /*
