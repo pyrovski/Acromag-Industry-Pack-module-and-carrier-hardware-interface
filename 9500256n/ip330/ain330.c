@@ -106,6 +106,7 @@ int mode;
       }
       f_cor /= (double)AVE_SAMPLES;
 
+      //! @todo there are library functions for this...
       if( f_cor < 0.0)		/* round */
           f_cor -= 0.5;
       else
