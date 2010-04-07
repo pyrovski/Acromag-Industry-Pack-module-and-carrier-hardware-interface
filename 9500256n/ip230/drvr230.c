@@ -1,4 +1,3 @@
-
 #include "../carrier/apc8620.h"
 #include "ip230.h"
 #include <math.h>
@@ -61,8 +60,8 @@
   int model;                /* model type storage */
   float max, min, half_span, v, dv, rad, midpoint, mem_span;
 
-int main()
-{
+
+int main(){
 
 
 /*
@@ -284,13 +283,13 @@ type:
 */
 				if(GetIpackAddress(c_block230.nHandle, c_block230.slotLetter, &addr) != S_OK)
 				{
-					printf("\nUnable to Get Ipack Address.\n");
-					c_block230.bInitialized = FALSE;
+				  printf("\nUnable to Get Ipack Address.\n");
+				  c_block230.bInitialized = FALSE;
 				}
 				else	              
 				{	
-	                c_block230.brd_ptr = (struct map230 *)addr;
-					c_block230.bInitialized = TRUE;
+				  c_block230.brd_ptr = (struct map230 *)addr;
+				  c_block230.bInitialized = TRUE;
 				}
 			}
 		}
@@ -326,7 +325,7 @@ gloop1:
 	      printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
     	      scanf("%x", &channel);
               printf("\n");
-              if(channel > num_chan || channel < 0)
+              if(channel >= num_chan || channel < 0)
               {
                printf("\nChannel out of range.\n");
                goto gloop1;
@@ -375,7 +374,7 @@ gloop2:
 	      printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
               scanf("%x", &channel);
               printf("\n");
-              if(channel > num_chan || channel < 0)
+              if(channel >= num_chan || channel < 0)
               {
                  printf("\nChannel out of range.\n");
                  goto gloop2;
@@ -530,7 +529,7 @@ vloop2:
 	 		     printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
               		     scanf("%x", &channel);
               		     printf("\n");
-              		     if(channel > num_chan || channel < 0)
+              		     if(channel >= num_chan || channel < 0)
               		     {
                 	     printf("\nChannel out of range.\n");
                  	     goto gloop3;
@@ -599,7 +598,7 @@ vloop2:
 	      			printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
              			scanf("%x", &channel);
               			printf("\n");
-              			if(channel > num_chan || channel < 0)
+              			if(channel >= num_chan || channel < 0)
               			{
                  			printf("\nChannel out of range.\n");
                  			goto gloop5;
@@ -665,7 +664,7 @@ vloop2:
 	      		printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
               		scanf("%x", &channel);
               		printf("\n");
-              		if(channel > num_chan || channel < 0)
+              		if(channel >= num_chan || channel < 0)
               		{
                  		printf("\nChannel out of range.\n");
                  		goto gloop4;
@@ -749,7 +748,7 @@ vloop2:
 	      		printf("\nEnter channel number 0 - %d     : ",num_chan - 1);
               		scanf("%x", &channel);
               		printf("\n");
-              		if(channel > num_chan || channel < 0)
+              		if(channel >= num_chan || channel < 0)
               		{
                  		printf("\nChannel out of range.\n");
                  		goto gloop6;
@@ -876,7 +875,7 @@ tloop2:
 /*
     Reset board to disable interrupts from all counters on this IP module
 */
-    if(!c_block230.bInitialized)    /* module address was set */
+    if(c_block230.bInitialized)    /* module address was set */
       soft_reset(&c_block230);      /* reset board */
 
     DisableInterrupts(c_block230.nHandle);
