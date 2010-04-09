@@ -421,13 +421,14 @@ int main()
 		  printf("%x] ",i & 0xf);
 	      }
 /*
-    In diferential mode the input gains for channels 0-F are also used
+    In differential mode the input gains for channels 0-F are also used
     for channels 10-1F
 */
               if(c_block330.acq_mode == DI_SELECT && i > 0xf)
                 j &= 0xf;
 
-              printf("%12.6f ",((double)cor_data[i] / (double)CON16 * s + z) /
+              printf("%12.6f ",((double)cor_data[i] / 
+				(double)CON16 * s + z) /
                     (double)(1 << get_gain(&c_block330, j)));
 	    }
             break;
