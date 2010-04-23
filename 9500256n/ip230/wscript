@@ -28,7 +28,7 @@ def build(bld):
 		source = 'drvr230.c',
 		target = 'a.out',
 		libs   = 'm',
-#		includes = '. ../carrier /usr/include',
+		includes = '. ../carrier /usr/include',
 		add_objects = ['carrier', 'ip230'])
 
 	bld.add_subdirs('../carrier')

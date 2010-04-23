@@ -26,9 +26,9 @@ def build(bld):
 		)
 	bld(
 		features = 'cc cprogram',
-#		source = bld.path.ant_glob('**/*.c'),
+		source = 'drvr330.c',
 		target = 'a.out',
-#		includes = '. ../carrier /usr/include',
+		includes = '. ../carrier /usr/include',
 		add_objects = ['carrier', 'ip330'])
 
 	bld.add_subdirs('../carrier')
