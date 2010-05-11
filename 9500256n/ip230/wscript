@@ -28,7 +28,11 @@ def build(bld):
 		source = 'drvr230.c',
 		target = 'a.out',
 		libs   = 'm',
+<<<<<<< HEAD:9500256n/ip230/wscript
 		includes = '. ../carrier /usr/include',
+=======
+#		includes = '. ../carrier /usr/include',
+>>>>>>> Testing waf build tool:9500256n/ip230/wscript
 		add_objects = ['carrier', 'ip230'])
 
 	bld.add_subdirs('../carrier')

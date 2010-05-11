@@ -26,9 +26,15 @@ def build(bld):
 		)
 	bld(
 		features = 'cc cprogram',
+<<<<<<< HEAD:9500256n/ip330/wscript
 		source = 'drvr330.c',
 		target = 'a.out',
 		includes = '. ../carrier /usr/include',
+=======
+#		source = bld.path.ant_glob('**/*.c'),
+		target = 'a.out',
+#		includes = '. ../carrier /usr/include',
+>>>>>>> Testing waf build tool:9500256n/ip330/wscript
 		add_objects = ['carrier', 'ip330'])
 
 	bld.add_subdirs('../carrier')
