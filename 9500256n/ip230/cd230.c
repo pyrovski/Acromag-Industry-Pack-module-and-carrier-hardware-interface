@@ -1,6 +1,7 @@
 
 #include "../carrier/apc8620.h"
 #include "ip230.h"
+#include <math.h>
 
 /*
 {+D}
@@ -79,36 +80,40 @@ int channel;
     i_data = c_blk->ideal_buf[channel];
     range = c_blk->range[channel];
 
-    /* default range == BIPOLAR_10 */
-    offset = (short)c_blk->coef_bufb10[channel][0];
-    gain = (short)c_blk->coef_bufb10[channel][1] & 0xffff;
-
-    if(range == BIPOLAR_5)
-    {
+    switch(range){
+    default:
+    case BIPOLAR_10:
+      offset = (short)c_blk->coef_bufb10[channel][0];
+      gain = (short)c_blk->coef_bufb10[channel][1] & 0xffff;
+      break;
+    case BIPOLAR_5:
      offset = (short)c_blk->coef_bufb5[channel][0];
      gain = (short)c_blk->coef_bufb5[channel][1] & 0xffff;
-    }
-
-    if( range == UNIPOLAR_10 )
-    {
+     break;
+    case UNIPOLAR_10:
       offset = (short)c_blk->coef_bufu10[channel][0];
       gain = (short)c_blk->coef_bufu10[channel][1] & 0xffff;
       i_data &= 0xFFFF;		/* remove sign extension for unipolar only*/
       i_data ^= 0x8000;		/* convert bipolar to unipolar */
+      break;
     }
 
-    f_cor = ((1.0 + ((double)gain / (4.0 * (double)65536.0))) *
-	    (double)i_data + ((double)offset / 4.0));
+    f_cor = (1.0 + (double)gain / (4.0 * 65536.0)) *
+	    (double)i_data + (double)offset / 4.0;
 
-    if( range == UNIPOLAR_10 )
-     {
-	f_cor -= 32768.0;
-     }
-
-     if( f_cor < 0.0)		/* round */
+    /* Acromag does not understand the concept of rounding
+     if( f_cor < 0.0)		// round 
 	   f_cor -= 0.5;
      else
 	   f_cor += 0.5;
+    */
 
-    c_blk->cor_buf[channel] = (short)f_cor;
+    i_data = (int)roundf(f_cor);
+    if(range == UNIPOLAR_10)
+	i_data -= 32768;
+
+    i_data = i_data > CON16/2 - 1 ? CON16/2 - 1: i_data;
+    i_data = i_data < -CON16/2 ? CON16/2 : i_data;
+    
+    c_blk->cor_buf[channel] = (short)(i_data);
 }
