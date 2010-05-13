@@ -112,6 +112,7 @@ int channel;
     if(range == UNIPOLAR_10)
 	i_data -= 32768;
 
+    // limit to useable range without truncating
     i_data = i_data > CON16/2 - 1 ? CON16/2 - 1: i_data;
     i_data = i_data < -CON16/2 ? CON16/2 : i_data;
     
