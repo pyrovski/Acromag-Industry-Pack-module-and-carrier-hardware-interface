@@ -1,6 +1,9 @@
 #include "../carrier/apc8620.h"
 #include "ip230.h"
 #include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <ctype.h>
 
 #define INTERRUPT_LEVEL 5   /* level or bus IRQ - may not be used on all systems */
 #define VECTOR 192          /* interrupt vector - may not be used on all systems */
@@ -883,6 +886,7 @@ tloop2:
 	CarrierClose(c_block230.nHandle);
 
     printf("\nEXIT PROGRAM\n");
+    return 0;
 }   /* end of main */
 
 

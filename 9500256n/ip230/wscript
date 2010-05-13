@@ -20,7 +20,7 @@ def build(bld):
 	bld(
 		features = 'cc',
 		source = bld.path.ant_glob('**/*.c', excl = 'drvr230.c'),
-		ccflags  = ['-Wall', '-ggdb'],
+		ccflags  = ['-Wall', '-ggdb', '-std=c99'],
 		target = 'ip230',
 		includes = '. ../carrier /usr/include'
 		)
