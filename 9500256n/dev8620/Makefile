@@ -19,6 +19,7 @@ default:
 install: default
 	install -m 0755 -d /lib/modules/$(shell uname -r)/extra/
 	install -m 0644 $(MODULE) /lib/modules/$(shell uname -r)/extra/
+	/sbin/depmod -A
 endif
 
 clean:
