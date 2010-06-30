@@ -55,6 +55,10 @@
 {-D}
 */
 
+
+#include <unistd.h>
+#include <sys/ioctl.h>
+
 #include "apc8620.h"
 
 #define DEVNAME "/dev/apc8620_"	/* name of device */
@@ -136,7 +140,7 @@ byte input_byte(int nHandle, byte *p)
 
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == NULL)
-		return;
+		return 0;
 
 	if( p )
 	{
@@ -156,7 +160,7 @@ word input_word(int nHandle, word *p)
 
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == NULL)
-		return;
+		return 0;
 
 	if( p )
 	{
@@ -176,7 +180,7 @@ long input_long(int nHandle, long *p)
 
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == NULL)
-		return;
+		return 0;
 
 	if( p )
 	{
@@ -196,7 +200,7 @@ long input_long_pci_config(int nHandle, long *p)
 
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == NULL)
-		return;
+		return 0;
 
         /* place address to read from in data[0]; */
         data[0] = (unsigned long) p;
@@ -822,8 +826,7 @@ CSTATUS SetIPClockControl(int nHandle, char chSlot, word uControl)
 	CARRIERDATA_STRUCT* pCarrier;
 	PCI_BOARD_MEMORY_MAP* pPCICard;
 	word nValue;
-	CSTATUS result;
-
+	
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == 0)
 		return E_INVALID_HANDLE;
@@ -880,8 +883,7 @@ CSTATUS GetIPClockControl(int nHandle, char chSlot, word* pControl)
 	CARRIERDATA_STRUCT* pCarrier;
 	PCI_BOARD_MEMORY_MAP* pPCICard;
 	word nValue;
-	CSTATUS result;
-
+	
 	*pControl = 0;	/* default */
 
 	pCarrier = GetCarrier(nHandle);

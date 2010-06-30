@@ -82,8 +82,13 @@ typedef int BOOL;
 typedef uint32_t ULONG;
 typedef unsigned char byte;	/*  custom made byte data type */
 typedef unsigned short word;	/* custom made word data type */
-typedef int CSTATUS;	/*  Custom made CSTATUS data type, used 
-							as return value from the carrier functions. */
+
+#ifdef CSTATUS
+#undef CSTATUS
+#endif
+typedef int CSTATUS;
+	/*  Custom made CSTATUS data type, used 
+	as return value from the carrier functions. */
 
 #define TRUE	1	/* Boolean value for true */
 #define FALSE	0	/* Boolean value for false */
