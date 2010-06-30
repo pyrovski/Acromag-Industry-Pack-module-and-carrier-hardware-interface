@@ -53,6 +53,11 @@
 /*!
   @todo allow access from multiple processes:
   http://www.makelinux.net/ldd3/chp-6-sect-2.shtml
+
+  Also, determine if there are request/response protocols involved in carrier 
+  or IP module communication.  If not, then a multi-process kernel module 
+  is relatively easy to implement.  Otherwise, more access control and 
+  state tracking is required.
 */
 
 /* APC8620 device */
@@ -62,7 +67,7 @@
 
 
 #ifndef BUILDING_FOR_KERNEL
-#define BUILDING_FOR_KERNEL	/* controls conditional inclusion in file apc8620.h */
+#define BUILDING_FOR_KERNEL /* controls conditional inclusion in file apc8620.h */
 #endif
 
 
@@ -186,11 +191,13 @@ read( struct file *fp, char *buf, size_t length, loff_t *offset )
 
       /* Read 32 bit from configuration space */
     case 0x40:	/* Read 32 bit from configuration space */
-      get_user( adata, (unsigned long *)adata );		/* pickup EE address */
-      get_user( idata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup instance index */
+      get_user( adata, (unsigned long *)adata );       /* pickup EE address */
+      /* pickup instance index */
+      get_user( idata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	
 
       if( p86xxBoard[idata] )
-	pci_read_config_dword( p86xxBoard[idata], (int)adata, (u32*)&ldata ); /* read config space */
+	/* read config space */
+	pci_read_config_dword( p86xxBoard[idata], (int)adata, (u32*)&ldata ); 
       else
 	ldata = 0;
       break;
@@ -200,7 +207,8 @@ read( struct file *fp, char *buf, size_t length, loff_t *offset )
       return( -EINVAL );
       break;
     }
-  put_user( ldata,(unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* update user data */
+  /* update user data */
+  put_user( ldata,(unsigned long *)( buf + (sizeof(unsigned long)) ) );	
   return( length );
 }
 
@@ -209,8 +217,9 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
 { 
   unsigned long adata, ldata, idata;
 
-  get_user( adata, (unsigned long *)buf );				/* pickup address */
-  get_user( ldata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	/* pickup data */
+  get_user( adata, (unsigned long *)buf );		   /* pickup address */
+  /* pickup data */
+  get_user( ldata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );
   switch( length )
     {
     case 1:	/* 8 bit */
@@ -241,11 +250,13 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
 
       /* Write 32 bit to configuration space */
     case 0x40:	/* Write 32 bit to configuration space */
-      get_user( adata, (unsigned long *)adata );		/* pickup EE address */
-      get_user( idata, (unsigned long *)(buf+(2*(sizeof(unsigned long)))) );	/* pickup instance index */
+      get_user( adata, (unsigned long *)adata );	/* pickup EE address */
+      /* pickup instance index */
+      get_user( idata, (unsigned long *)(buf+(2*(sizeof(unsigned long)))) );	
 
       if( p86xxBoard[idata] )
-	pci_write_config_dword( p86xxBoard[idata], (int)adata, (u32)ldata ); /* write config space */
+	/* write config space */
+	pci_write_config_dword( p86xxBoard[idata], (int)adata, (u32)ldata ); 
       break;
 
     default:
@@ -270,21 +281,24 @@ ioctl( struct inode *inode, struct file *fp, unsigned int cmd, unsigned long arg
       for(i = 0; i < MAX_CARRIERS; i++)                   /* get all boards */
 	{
 	  ldata = ( unsigned long )ip_mem_address[i];      /* convert to long */
-	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
+	  /* update user data */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}    
       break;
     case 5:/* return IP I/O address */
       for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
 	{
 	  ldata = ( unsigned long )carrier_address[i];      /* convert to long */
-	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
+	  /* update user data */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}    
       break;
     case 6:/* return IRQ number */
       for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
 	{
 	  ldata = ( unsigned long )board_irq[i];            /* convert IRQ to long */
-	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	/* update user data */
+	  /* update user data */
+	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}
       break;
     }
@@ -340,7 +354,8 @@ apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
 
   int device, slot;
 
-  hdata.hd_ptr = (char *)&idata;/* get address of isr_data struct to handler data struct */
+  /* get address of isr_data struct to handler data struct */
+  hdata.hd_ptr = (char *)&idata;
   int_status = 0;	/* indicate interrupt not handled */
 
   /* PEB: because this code wasn't functional anyway, I am breaking it further...
@@ -401,7 +416,8 @@ apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
   
   if( int_status )
     {
-      if( wqc == 0)            /* waiting for a blocked start convert AND an interrupt from the analog input board */
+/* waiting for a blocked start convert AND an interrupt from the analog input board */
+      if( wqc == 0)            
 	{
 	  wqc = 1;               /* when received, change the condition to true... */
 	  wake_up_interruptible(&ain_queue);	/* ... and wake the blocked write */
@@ -437,9 +453,8 @@ init_module( void )
 	{
 	  p86xxBoard[i] = p8620;
 	  carrier_address[i] = (unsigned long)p8620->resource[2].start;
-	  /*  Used in earlier versions FC3/4/5/6/7/8 */
-	  /*      carrier_address[i]= (unsigned long)__ioremap( carrier_address[i], 4096, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
-	  carrier_address[i]= (unsigned long)ioremap_nocache( carrier_address[i], 1024); /* no cache! */
+	  carrier_address[i]= 
+	    (unsigned long)ioremap_nocache( carrier_address[i], 1024); /* no cache! */
 
 	  if( carrier_address[i] )
 	    {
@@ -450,31 +465,31 @@ init_module( void )
 	      strcat(devnamebuf, devnumbuf);
 	      board_irq[i] = p8620->irq;
 	      ret_val = pci_enable_device(p8620);
-	      /*  Used for earlier versions FC3/4/5/6 */
-	      /*		ret_val = request_irq ( board_irq[i], apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] ); */
-	      /*  Used for FC7 */
-	      /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | SA_SHIRQ, devnamebuf, ( void *)carrier_address[i] );*/
-	      /*  Used for FC8/9/10 */
-	      /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );*/
-
-	      //ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      /*
+		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, 
+		SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      */
 
 	      // CentOS 4.5, tested on 2.6.26:
-	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, 
+				      IRQF_DISABLED | IRQF_SHARED, devnamebuf, 
+				      ( void *)carrier_address[i] );
 
-	      printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i],ret_val);
+	      printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,
+		     (unsigned long)carrier_address[i], board_irq[i],ret_val);
 
 	      /* 8620a may have an additional BAR register if it supports IP memory */
 	      /* if the additional region is present map it into memory */
-	      ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	/* get IP mem region if present */
+	      /* get IP mem region if present */
+	      ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	
 	      if( ip_mem_address[i] )
 		{
-		  /*  Used in earlier versions FC3/4/5/6/7/8 */
-		  /*	      ip_mem_address[i] = (unsigned long)__ioremap( ip_mem_address[i], 0x4000000, _PAGE_PCD ); / * no cache!  PPC use _PAGE_NO_CACHE */
-		  ip_mem_address[i] = (unsigned long)ioremap_nocache( ip_mem_address[i], 0x4000000 ); /* no cache! */
+		  ip_mem_address[i] = (unsigned long)
+		    ioremap_nocache( ip_mem_address[i], 0x4000000 ); /* no cache! */
 
 		  if( ip_mem_address[i] )
-		    printk("%s mapped   MEM=%08lX\n",devnamebuf, (unsigned long)ip_mem_address[i]);
+		    printk("%s mapped   MEM=%08lX\n",devnamebuf, 
+			   (unsigned long)ip_mem_address[i]);
 
 		}
 	      j++;
@@ -521,12 +536,14 @@ cleanup_module( void )
 
 	      free_irq( board_irq[i], (void *)carrier_address[i] );
 	      iounmap( (void *)carrier_address[i] );
-	      printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i]);
+	      printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,
+		     (unsigned long)carrier_address[i], board_irq[i]);
 
 	      if( ip_mem_address[i] )
 		{
 		  iounmap( (void *)ip_mem_address[i] );
-		  printk("%s unmapped MEM=%08lX\n",devnamebuf,(unsigned long)ip_mem_address[i]);
+		  printk("%s unmapped MEM=%08lX\n",devnamebuf,
+			 (unsigned long)ip_mem_address[i]);
 		}
 	    }
 	}
