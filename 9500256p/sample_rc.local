@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+
+touch /var/lock/subsys/local
+#
+#Create persistent device nodes for Acromag PCI board products.
+#
+#  For models APC8620/21 ACPC8625 ACPC8630/35
+#  Create a device node in the /dev directory using
+#   "mknod apc8620_0 c 46 0"
+#   "mknod apc8620_1 c 46 1"
+#   "mknod apc8620_2 c 46 2"
+#   "mknod apc8620_3 c 46 3"
+#   The command line items are as follows:
+#   apc8620_x - Device name x = instance of the device.
+#    c        - Character device driver.
+#   46        - Major number defined in the device driver file.
+#    x        - Minor number 0 to 3.
+
+#Acromag apc8620
+if [ ! -r /dev/apc8620_0 ]; then
+echo "apc8620_0 thru 3"
+/bin/mknod -m 666 /dev/apc8620_0 c 46 0
+/bin/mknod -m 666 /dev/apc8620_1 c 46 1
+/bin/mknod -m 666 /dev/apc8620_2 c 46 2
+/bin/mknod -m 666 /dev/apc8620_3 c 46 3
+fi
