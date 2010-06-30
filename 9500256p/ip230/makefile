@@ -1,10 +1,11 @@
 
-MODCFLAGS :=
+MODCFLAGS := -ggdb
 
-a.out:		apc8620.o cd230.o contreg.o rmid230.o timer.o rwwavmem.o wro230.o wcc230.o drvr230.o
+a.out:	apc8620.o cd230.o contreg.o rmid230.o timer.o rwwavmem.o\
+		wro230.o wcc230.o drvr230.o
 
-			cc -o a.out apc8620.o cd230.o drvr230.o contreg.o rmid230.o\
-			timer.o rwwavmem.o wro230.o wcc230.o -lm
+	cc $(MODCFLAGS) -o a.out apc8620.o cd230.o drvr230.o contreg.o rmid230.o\
+		timer.o rwwavmem.o wro230.o wcc230.o -lm
 
 apc8620.o:		../carrier/apc8620.c ../carrier/apc8620.h
 			$(CC) $(MODCFLAGS) -c ../carrier/apc8620.c
@@ -33,5 +34,6 @@ wro230.o:		wro230.c ip230.h
 wcc230.o:		wcc230.c ip230.h
 			$(CC) $(MODCFLAGS) -c wcc230.c
 
-
+clean:
+			rm -f *.o a.out *~
 

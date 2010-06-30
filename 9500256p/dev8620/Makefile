@@ -15,4 +15,12 @@ PWD := $(shell pwd)
 
 default:
 	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+
+install: default
+	install -m 0755 -d /lib/modules/$(shell uname -r)/extra/
+	install -m 0644 $(MODULE) /lib/modules/$(shell uname -r)/extra/
+	/sbin/depmod -A
 endif
+
+clean:
+	rm -f ./*.o ./*~ ./*.ko ./.*o.cmd

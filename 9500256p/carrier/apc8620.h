@@ -65,6 +65,8 @@
 */
 
 
+#ifndef APC8620_H
+#define APC8620_H
 
 #ifndef BUILDING_FOR_KERNEL
 #include <stdio.h>
@@ -274,3 +276,4 @@ long input_long(int nHandle, long*);			/* function to read an input long */
 void output_long(int nHandle, long*, long);	/* function to output a long */
 void blocking_start_convert(int nHandle, word *p, word v);
 void blocking_start_convert_byte(int nHandle, byte *p, byte v);
+#endif

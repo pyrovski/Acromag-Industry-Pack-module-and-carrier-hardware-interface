@@ -69,6 +69,8 @@ typedef unsigned short word;
 
 
 /* definitions */
+#ifndef IP330_H
+#define IP330_H
 #ifndef BUILDING_FOR_KERNEL
 #define SA_SIZE 32	/* # of elements in data arrays */
 #define AVE_SAMPLES 64
@@ -216,3 +218,4 @@ long get_param(void);					/* input a parameter */
 
 void isr_330(void* pData);	/* interrupt handler for IP330 */
 
+#endif

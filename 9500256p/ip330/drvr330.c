@@ -421,7 +421,7 @@ int main()
 		  printf("%x] ",i & 0xf);
 	      }
 /*
-    In diferential mode the input gains for channels 0-F are also used
+    In differential mode the input gains for channels 0-F are also used
     for channels 10-1F
 */
               if(c_block330.acq_mode == DI_SELECT && i > 0xf)

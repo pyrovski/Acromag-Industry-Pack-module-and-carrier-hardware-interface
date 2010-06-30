@@ -215,7 +215,8 @@ struct cblk330 *c_blk;
     cor_buf[loop] = (int)temp;
 
     chan++;
-    if(++loop > 31)                     /* convert channels in array */
+    //if(++loop > 31)                     /* convert channels in array */
+    if(++loop > c_blk->e_channel)
 	break;
     }
     return(0);

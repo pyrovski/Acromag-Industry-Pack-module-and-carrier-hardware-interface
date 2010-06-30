@@ -43,6 +43,7 @@
 --/--/--       change carrier size from 4096 to 1024 and 
 --/--/--       remove 'IRQF_DISABLED' from request_irq().
 08/02/09 FJM   Add configuration register access.
+01/--/10 PEB   Update for CentOS 4.5
 06/02/10 FJM   Fedora13 update added #include <linux/wait.h> & <linux/sched.h>
  
 {-D}
@@ -777,7 +778,10 @@ init_module( void )
 /*  Used for FC8/9/10 */
 /*		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );*/
 
-		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+	      //ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+
+	      // CentOS 4.5, tested on 2.6.26:
+	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, IRQF_DISABLED | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
 
         printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,(unsigned long)carrier_address[i], board_irq[i],ret_val);
 
