@@ -116,6 +116,7 @@ typedef int CSTATUS;
 #define SLOT_E_MEM_OFFSET	 0x02000000	/*  Slot E MEM space addr. */
 
 #define MAX_CARRIERS 4	/* maximum number of carriers */
+#define MAX_SLOTS    5  /* number of IP module slots on this carrier */
 
 #define SOFTWARE_RESET 0x0100		/*  Value to OR with control register to reset carrier */
 #define TIME_OUT_INT_ENABLE 0x0008	/* IP access time out interrupt enable */
