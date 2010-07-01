@@ -58,18 +58,23 @@
   or IP module communication.  If not, then a multi-process kernel module 
   is relatively easy to implement.  Otherwise, more access control and 
   state tracking is required.
+
+  AFAIK, the "blocking start convert" functionality is the only instance of 
+  request/response behavior.
+
+  Some global variables need to be tracked per process:
+  - bqc
+  - wqc
+  
+  Some global variables can be made local:
+  - ret_val (done)
 */
 
 /* APC8620 device */
 
-
-
-
-
 #ifndef BUILDING_FOR_KERNEL
 #define BUILDING_FOR_KERNEL /* controls conditional inclusion in file apc8620.h */
 #endif
-
 
 #include <linux/init.h>
 #include <linux/module.h>
@@ -119,7 +124,6 @@ unsigned int board_irq[MAX_CARRIERS];
 unsigned long carrier_address[MAX_CARRIERS];
 unsigned long ip_mem_address[MAX_CARRIERS];
 struct pci_dev *p86xxBoard[MAX_CARRIERS];
-int ret_val = 0;
 
 static DECLARE_WAIT_QUEUE_HEAD(ain_queue);  /* wait queue for analog inputs */
 static int wqc = 2;                         /* wait queue condition */
@@ -218,8 +222,10 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
   unsigned long adata, ldata, idata;
 
   get_user( adata, (unsigned long *)buf );		   /* pickup address */
+
   /* pickup data */
   get_user( ldata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );
+
   switch( length )
     {
     case 1:	/* 8 bit */
@@ -234,6 +240,8 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
     case 8:	/* 16 bit blocking start convert */
       wqc = 0;       /* indicate waiting */
       writew( (int)ldata, (void *)adata );
+
+      //! @todo check return value for signal reception
       wait_event_interruptible(ain_queue, wqc);
       wqc = 2;       /* indicate complete */ 
       /* printk("after wait_event_interruptible\n");*/
@@ -242,6 +250,7 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
       init_waitqueue_head(&dio_queue);
       bqc = 0;       /* indicate waiting */
       writeb( (int)ldata, (void *)adata );
+      //! @todo check return value for signal reception
       wait_event_interruptible(dio_queue, bqc);
       bqc = 2;       /* indicate complete */ 
       /* printk("after wait_event_interruptible\n");*/
@@ -431,6 +440,7 @@ apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
 int
 init_module( void ) 
 {
+  int ret_val = 0;
   extern struct pci_dev *p86xxBoard[MAX_CARRIERS];
   struct pci_dev *p8620;
   int i,j;
@@ -516,6 +526,7 @@ init_module( void )
 void
 cleanup_module( void ) 
 {
+  int ret_val = 0;
   char devnamebuf[32];
   char devnumbuf[8];
   int i;
