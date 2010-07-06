@@ -91,6 +91,7 @@
 #include <asm/io.h>
 #include <asm/system.h>
 #include <asm/uaccess.h>
+#include <linux/semaphore.h>
 
 
 #include "../carrier/apc8620.h"
@@ -118,12 +119,13 @@
 #define DEVICE_NAME	"apc8620_"	/* the name of the device */
 #define MAJOR_NUM	46
 
-
 int open_dev[MAX_CARRIERS];
 unsigned int board_irq[MAX_CARRIERS];
 unsigned long carrier_address[MAX_CARRIERS];
 unsigned long ip_mem_address[MAX_CARRIERS];
 struct pci_dev *p86xxBoard[MAX_CARRIERS];
+
+DECLARE_MUTEX(lock);
 
 static DECLARE_WAIT_QUEUE_HEAD(ain_queue);  /* wait queue for analog inputs */
 static int wqc = 2;                         /* wait queue condition */
@@ -146,10 +148,9 @@ open( struct inode *inode, struct file *fp )
   if( minor > (MAX_CARRIERS - 1))
     return( -ENODEV );
   
-  if( open_dev[minor] )
-    return( -EBUSY );
-
-  open_dev[minor] = 1;
+  up(&lock);
+  open_dev[minor]++;
+  down(&lock);
 
   return( 0 );
 }
@@ -157,18 +158,22 @@ open( struct inode *inode, struct file *fp )
 static int
 release( struct inode *inode, struct file *fp )
 {
-  int minor;
+  int minor, status;
 
   minor = inode->i_rdev & 0xf;
   if( minor > (MAX_CARRIERS - 1))
     return( -ENODEV );
 
-  if( open_dev[minor] )
-    {
-      open_dev[minor] = 0;
-      return( 0 );
-    }
-  return( -ENODEV );
+  up(&lock);
+  if( open_dev[minor] > 0){
+    open_dev[minor]--;
+    status = 0;
+  } else {
+    open_dev[minor] = 0;
+    status = -ENODEV;
+  }
+  down(&lock);
+  return status;
 }
 
 static ssize_t
@@ -382,7 +387,7 @@ apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
 	  /* Check each IP slot for an interrupt pending */
 	  /* Call interrupt handler for any pending interrupts */
 	for(slot = 0; slot < MAX_SLOTS; slot++){
-	  if(nValue & IPA_INT0_PENDING << slot | IPA_INT1_PENDING << slot){
+	  if(nValue & (IPA_INT0_PENDING << slot | IPA_INT1_PENDING << slot)){
 	    /* This slot is pending... load up the interrupt data structure 
 	       and call the ISR for this slot*/
 
