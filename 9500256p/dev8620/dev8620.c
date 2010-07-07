@@ -93,8 +93,13 @@
 #include <asm/io.h>
 #include <asm/system.h>
 #include <asm/uaccess.h>
-#include <linux/semaphore.h>
 
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26)
+#include <asm/semaphore.h>
+#else
+#include <linux/semaphore.h>
+#endif
 
 #include "../carrier/apc8620.h"
 #include "../ip1k100/ip1k100.h"
