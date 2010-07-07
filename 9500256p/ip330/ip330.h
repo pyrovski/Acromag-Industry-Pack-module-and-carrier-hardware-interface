@@ -87,7 +87,7 @@ typedef unsigned short word;
 
 #define CON16	 (long)65536	/* constant for data correction equation */
 
-#define TC_SELECT   0		/* two's compliment */
+#define TC_SELECT   0		/* two's complement */
 #define SB_SELECT   1		/* straight binary */
 
 #define TI_SELECT   0		/* trigger direction (input)*/
