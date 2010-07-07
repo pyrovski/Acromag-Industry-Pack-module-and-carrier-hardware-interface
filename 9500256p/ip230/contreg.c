@@ -325,20 +325,26 @@ void conv_mode(choice, c_blk)
 
 	  control &= 0xf8ff;	/* default choice == 1 do nothing, bits are clear */
 
-	  if(choice == 2)
-	    control  |= 0x0100;
-
-	  if(choice == 3)
-	    control  |= 0x0200;
-
-	  if(choice == 4)
-	    control  |= 0x0300;
-
-	  if(choice == 5)
-	    control  |= 0x0400;
-
-	  if(choice == 6)
-	    control  |= 0x0500;
+	  switch(choice){
+	  default:
+	  case CONV_DISABLE: // disable
+	    break;
+	  case CONV_SINGLE_REG:
+	    control |= 0x0100;
+	    break;
+	  case CONV_SINGLE_WAV:
+	    control |= 0x0200;
+	    break;
+	  case CONV_CYCLE_WAV:
+	    control |= 0x0300;
+	    break;
+	  case CONV_CYCLE_WAV_INT:
+	    control |= 0x0400;
+	    break;
+	  case CONV_CYCLE_WAV_CONT:
+	    control |= 0x0500;
+	    break;
+	  }
 
 	  write_vector(c_blk);
 	  output_word( c_blk->nHandle, (word*)&c_blk->brd_ptr->cont_reg, control );

@@ -66,6 +66,16 @@
 #define A_SIZE8 8	        /* array size */
 #define A_SIZE4 4	        /* array size */
 
+/*
+  constants for conversion mode selection
+ */
+#define CONV_DISABLE        1 // disable
+#define CONV_SINGLE_REG     2 // single conversion from registers
+#define CONV_SINGLE_WAV     3 // single conversion from waveform memory
+#define CONV_CYCLE_WAV      4 // single cycle of waveform memory
+#define CONV_CYCLE_WAV_INT  5 // single cycle of waveform memory with interrupt
+#define CONV_CYCLE_WAV_CONT 6 // continuous cycle of waveform memory
+
 /* Define min and max waveform memory address values */
 
 enum
