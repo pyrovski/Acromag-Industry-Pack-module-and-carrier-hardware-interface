@@ -67,7 +67,9 @@
   - wqc
   
   Some global variables can be made local:
-  - ret_val (done)
+  - ret_val
+  - - Done, but cleanup_module() uses it to detect error conditions.
+  - - These should be identified individually and examined
 */
 
 /* APC8620 device */
@@ -119,12 +121,17 @@
 #define DEVICE_NAME	"apc8620_"	/* the name of the device */
 #define MAJOR_NUM	46
 
-int open_dev[MAX_CARRIERS];
-unsigned int board_irq[MAX_CARRIERS];
-unsigned long carrier_address[MAX_CARRIERS];
-unsigned long ip_mem_address[MAX_CARRIERS];
-struct pci_dev *p86xxBoard[MAX_CARRIERS];
+struct {
+  int open_dev[MAX_CARRIERS], initialized;
+  unsigned int board_irq[MAX_CARRIERS];
+  unsigned long carrier_address[MAX_CARRIERS];
+  unsigned long ip_mem_address[MAX_CARRIERS];
+  struct pci_dev *p86xxBoard[MAX_CARRIERS];
+} apc8620_data;
 
+/*!
+  @todo track processes on calls to open()
+ */  
 DECLARE_MUTEX(lock);
 
 static DECLARE_WAIT_QUEUE_HEAD(ain_queue);  /* wait queue for analog inputs */
@@ -149,7 +156,7 @@ open( struct inode *inode, struct file *fp )
     return( -ENODEV );
   
   up(&lock);
-  open_dev[minor]++;
+  apc8620_data.open_dev[minor]++;
   down(&lock);
 
   return( 0 );
@@ -165,11 +172,11 @@ release( struct inode *inode, struct file *fp )
     return( -ENODEV );
 
   up(&lock);
-  if( open_dev[minor] > 0){
-    open_dev[minor]--;
+  if( apc8620_data.open_dev[minor] > 0){
+    apc8620_data.open_dev[minor]--;
     status = 0;
   } else {
-    open_dev[minor] = 0;
+    apc8620_data.open_dev[minor] = 0;
     status = -ENODEV;
   }
   down(&lock);
@@ -203,10 +210,10 @@ read( struct file *fp, char *buf, size_t length, loff_t *offset )
       get_user( adata, (unsigned long *)adata );       /* pickup EE address */
       /* pickup instance index */
       get_user( idata, (unsigned long *)( buf + (sizeof(unsigned long)) ) );	
-
-      if( p86xxBoard[idata] )
+      
+      if( apc8620_data.p86xxBoard[idata] )
 	/* read config space */
-	pci_read_config_dword( p86xxBoard[idata], (int)adata, (u32*)&ldata ); 
+	pci_read_config_dword( apc8620_data.p86xxBoard[idata], (int)adata, (u32*)&ldata ); 
       else
 	ldata = 0;
       break;
@@ -268,9 +275,9 @@ write( struct file *fp, const char *buf, size_t length, loff_t *offset )
       /* pickup instance index */
       get_user( idata, (unsigned long *)(buf+(2*(sizeof(unsigned long)))) );	
 
-      if( p86xxBoard[idata] )
+      if( apc8620_data.p86xxBoard[idata] )
 	/* write config space */
-	pci_write_config_dword( p86xxBoard[idata], (int)adata, (u32)ldata ); 
+	pci_write_config_dword( apc8620_data.p86xxBoard[idata], (int)adata, (u32)ldata ); 
       break;
 
     default:
@@ -294,7 +301,7 @@ ioctl( struct inode *inode, struct file *fp, unsigned int cmd, unsigned long arg
     case 4:/* return IP MEM address */
       for(i = 0; i < MAX_CARRIERS; i++)                   /* get all boards */
 	{
-	  ldata = ( unsigned long )ip_mem_address[i];      /* convert to long */
+	  ldata = ( unsigned long )apc8620_data.ip_mem_address[i];      /* convert to long */
 	  /* update user data */
 	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}    
@@ -302,7 +309,7 @@ ioctl( struct inode *inode, struct file *fp, unsigned int cmd, unsigned long arg
     case 5:/* return IP I/O address */
       for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
 	{
-	  ldata = ( unsigned long )carrier_address[i];      /* convert to long */
+	  ldata = ( unsigned long )apc8620_data.carrier_address[i];      /* convert to long */
 	  /* update user data */
 	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}    
@@ -310,7 +317,7 @@ ioctl( struct inode *inode, struct file *fp, unsigned int cmd, unsigned long arg
     case 6:/* return IRQ number */
       for(i = 0; i < MAX_CARRIERS; i++)                    /* get all boards */
 	{
-	  ldata = ( unsigned long )board_irq[i];            /* convert IRQ to long */
+	  ldata = ( unsigned long )apc8620_data.board_irq[i];            /* convert IRQ to long */
 	  /* update user data */
 	  put_user( ldata, (unsigned long *)(arg+(i*(sizeof(unsigned long)))) );	
 	}
@@ -377,11 +384,11 @@ apc8620_handler( int irq, void *did, struct pt_regs *cpu_regs )
      at least the code can be < 300 lines
    */
   for(device = 0; device < MAX_CARRIERS; device++){
-    if(open_dev[device]){
-      pPCICard = (PCI_BOARD_MEMORY_MAP*)carrier_address[device];
+    if(apc8620_data.open_dev[device]){
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)apc8620_data.carrier_address[device];
       nValue = readw((unsigned short*)&pPCICard->intPending);
       if( nValue & CARRIER_INT_MASK ){/* non-zero if this carrier is interrupting */
-	  /*printk("\nopen_dev[0] pending %X",nValue);*/
+	  /*printk("\napc8620_data.open_dev[0] pending %X",nValue);*/
 
 
 	  /* Check each IP slot for an interrupt pending */
@@ -446,17 +453,17 @@ int
 init_module( void ) 
 {
   int ret_val = 0;
-  extern struct pci_dev *p86xxBoard[MAX_CARRIERS];
   struct pci_dev *p8620;
   int i,j;
   char devnamebuf[32];
   char devnumbuf[8];
 
-  memset( &p86xxBoard[0], 0, sizeof(p86xxBoard));
-  memset( &open_dev[0], 0, sizeof(open_dev));
-  memset( &board_irq[0], 0, sizeof(board_irq));
-  memset( &ip_mem_address[0], 0, sizeof(ip_mem_address));
-  memset( &carrier_address[0], 0, sizeof(carrier_address));
+  memset( &apc8620_data.p86xxBoard[0], 0, sizeof(apc8620_data.p86xxBoard));
+  memset( &apc8620_data.open_dev[0], 0, sizeof(apc8620_data.open_dev));
+  memset( &apc8620_data.board_irq[0], 0, sizeof(apc8620_data.board_irq));
+  memset( &apc8620_data.ip_mem_address[0], 0, sizeof(apc8620_data.ip_mem_address));
+  memset( &apc8620_data.carrier_address[0], 0, sizeof(apc8620_data.carrier_address));
+  apc8620_data.initialized = 0;
 
   p8620 = NULL;
   for( i = 0, j = 0; i < MAX_CARRIERS; i++ )
@@ -466,45 +473,51 @@ init_module( void )
       p8620 = ( struct pci_dev *)pci_get_device( 0x10B5, 0x1024, p8620 );
       if( p8620 )
 	{
-	  p86xxBoard[i] = p8620;
-	  carrier_address[i] = (unsigned long)p8620->resource[2].start;
-	  carrier_address[i]= 
-	    (unsigned long)ioremap_nocache( carrier_address[i], 1024); /* no cache! */
+	  apc8620_data.p86xxBoard[i] = p8620;
+	  apc8620_data.carrier_address[i] = (unsigned long)p8620->resource[2].start;
+	  /* no cache! */
+	  apc8620_data.carrier_address[i]= 
+	    (unsigned long)ioremap_nocache( apc8620_data.carrier_address[i], 1024); 
 
-	  if( carrier_address[i] )
+	  if( apc8620_data.carrier_address[i] )
 	    {
 	      memset( &devnamebuf[0], 0, sizeof(devnamebuf));
 	      memset( &devnumbuf[0], 0, sizeof(devnumbuf));
 	      strcpy(devnamebuf, DEVICE_NAME);
 	      sprintf(&devnumbuf[0],"%d",i);
 	      strcat(devnamebuf, devnumbuf);
-	      board_irq[i] = p8620->irq;
+	      apc8620_data.board_irq[i] = p8620->irq;
 	      ret_val = pci_enable_device(p8620);
 	      /*
-		ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, 
-		SA_INTERRUPT | IRQF_SHARED, devnamebuf, ( void *)carrier_address[i] );
+		ret_val = request_irq ( apc8620_data.board_irq[i], 
+		(irq_handler_t)apc8620_handler, 
+		SA_INTERRUPT | IRQF_SHARED, devnamebuf, 
+		( void *)apc8620_data.carrier_address[i] );
 	      */
 
 	      // CentOS 4.5, tested on 2.6.26:
-	      ret_val = request_irq ( board_irq[i], (irq_handler_t)apc8620_handler, 
+	      ret_val = request_irq ( apc8620_data.board_irq[i], 
+				      (irq_handler_t)apc8620_handler, 
 				      IRQF_DISABLED | IRQF_SHARED, devnamebuf, 
-				      ( void *)carrier_address[i] );
+				      ( void *)apc8620_data.carrier_address[i] );
 
 	      printk("%s mapped   I/O=%08lX IRQ=%02X Rv=%X\n",devnamebuf,
-		     (unsigned long)carrier_address[i], board_irq[i],ret_val);
+		     (unsigned long)apc8620_data.carrier_address[i], 
+		     apc8620_data.board_irq[i],ret_val);
 
 	      /* 8620a may have an additional BAR register if it supports IP memory */
 	      /* if the additional region is present map it into memory */
 	      /* get IP mem region if present */
-	      ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	
-	      if( ip_mem_address[i] )
+	      apc8620_data.ip_mem_address[i] = (unsigned long)p8620->resource[3].start;	
+	      if( apc8620_data.ip_mem_address[i] )
 		{
-		  ip_mem_address[i] = (unsigned long)
-		    ioremap_nocache( ip_mem_address[i], 0x4000000 ); /* no cache! */
-
-		  if( ip_mem_address[i] )
+		  /* no cache! */
+		  apc8620_data.ip_mem_address[i] = (unsigned long)
+		    ioremap_nocache( apc8620_data.ip_mem_address[i], 0x4000000 ); 
+		  
+		  if( apc8620_data.ip_mem_address[i] )
 		    printk("%s mapped   MEM=%08lX\n",devnamebuf, 
-			   (unsigned long)ip_mem_address[i]);
+			   (unsigned long)apc8620_data.ip_mem_address[i]);
 
 		}
 	      j++;
@@ -513,57 +526,65 @@ init_module( void )
       else
 	break;
     }
-  if( j )	/* found at least one device */
-    {
-      ret_val = register_chrdev ( MAJOR_NUM, DEVICE_NAME, &apc8620_ops );
-
-      if( ret_val < 0)
-	{
-	  printk(DEVICE_NAME);
-	  printk(" Failed to register error = %d\n", ret_val);
-	}
-      else
-	return( 0 );
+  if( j ){	/* found at least one device */
+    up(&lock);
+      
+    ret_val = register_chrdev ( MAJOR_NUM, DEVICE_NAME, &apc8620_ops );
+      
+    if( ret_val < 0){
+      printk(DEVICE_NAME);
+      printk(" Failed to register error = %d\n", ret_val);
+      ret_val = -ENODEV;
+    } else {
+      apc8620_data.initialized = 1;
+      ret_val = 0;
     }
-  return( -ENODEV );
+    down(&lock);
+  } else
+    ret_val = -ENODEV;
+  
+  return( ret_val );
 }
 
 void
 cleanup_module( void ) 
 {
-  int ret_val = 0;
   char devnamebuf[32];
   char devnumbuf[8];
   int i;
 
+  up(&lock);
 
-  if( ret_val >= 0 )
-    {
-      unregister_chrdev( MAJOR_NUM, DEVICE_NAME );
-      for( i = 0; i < MAX_CARRIERS; i++ )
-	{
-	  if( carrier_address[i] )
-	    {
-	      memset( &devnamebuf[0], 0, sizeof(devnamebuf));
-	      memset( &devnumbuf[0], 0, sizeof(devnumbuf));
-	      strcpy(devnamebuf, DEVICE_NAME);
-	      sprintf(&devnumbuf[0],"%d",i);
-	      strcat(devnamebuf, devnumbuf);
+  if( apc8620_data.initialized ) {
+    unregister_chrdev( MAJOR_NUM, DEVICE_NAME );
+    for( i = 0; i < MAX_CARRIERS; i++ ) {
+      if( apc8620_data.carrier_address[i] )  {
+	memset( &devnamebuf[0], 0, sizeof(devnamebuf));
+	memset( &devnumbuf[0], 0, sizeof(devnumbuf));
+	strcpy(devnamebuf, DEVICE_NAME);
+	sprintf(&devnumbuf[0],"%d",i);
+	strcat(devnamebuf, devnumbuf);
 
-	      free_irq( board_irq[i], (void *)carrier_address[i] );
-	      iounmap( (void *)carrier_address[i] );
-	      printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,
-		     (unsigned long)carrier_address[i], board_irq[i]);
+	free_irq( apc8620_data.board_irq[i], 
+		  (void *)apc8620_data.carrier_address[i] );
 
-	      if( ip_mem_address[i] )
-		{
-		  iounmap( (void *)ip_mem_address[i] );
-		  printk("%s unmapped MEM=%08lX\n",devnamebuf,
-			 (unsigned long)ip_mem_address[i]);
-		}
-	    }
+	iounmap( (void *)apc8620_data.carrier_address[i] );
+	printk("%s unmapped I/O=%08lX IRQ=%02X\n",devnamebuf,
+	       (unsigned long)apc8620_data.carrier_address[i], 
+	       apc8620_data.board_irq[i]);
+
+	if( apc8620_data.ip_mem_address[i] ){
+	  iounmap( (void *)apc8620_data.ip_mem_address[i] );
+	  printk("%s unmapped MEM=%08lX\n",devnamebuf,
+		 (unsigned long)apc8620_data.ip_mem_address[i]);
 	}
+	pci_disable_device(apc8620_data.p86xxBoard[i]);
+      }
+      if(apc8620_data.p86xxBoard[i])
+	pci_dev_put(apc8620_data.p86xxBoard[i]);
     }
+  }
+  down(&lock);
 }
 
 MODULE_LICENSE("GPL and additional rights");
