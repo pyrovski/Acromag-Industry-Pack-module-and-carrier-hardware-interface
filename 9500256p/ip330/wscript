@@ -22,12 +22,14 @@ def build(bld):
 		features = 'cc',
 		source = bld.path.ant_glob('**/*.c', excl = 'drvr330.c'),
 		target = 'ip330',
+		ccflags  = ['-Wall', '-ggdb', '-fPIC'],
 		includes = '. ../carrier /usr/include'
 		)
 	bld(
 		features = 'cc cprogram',
 		source = 'drvr330.c',
 		target = 'a.out',
+		ccflags  = ['-Wall', '-ggdb', '-std=c99'],
 		includes = '. ../carrier /usr/include',
 		add_objects = ['carrier', 'ip330'])
 
