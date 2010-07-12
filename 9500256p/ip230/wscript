@@ -17,11 +17,18 @@ def configure(conf):
 	conf.check_tool('compiler_cc')
 
 def build(bld):
+
+	bld(
+		uselib = '',
+		name = 'ip230Inc',
+		export_incdirs = '.')
+
 	bld(
 		features = 'cc',
 		source = bld.path.ant_glob('**/*.c', excl = 'drvr230.c'),
 		ccflags  = ['-Wall', '-ggdb', '-std=c99', '-fPIC'],
 		target = 'ip230',
+		export_incdirs = '.',
 		includes = '. ../carrier /usr/include'
 		)
 	bld(

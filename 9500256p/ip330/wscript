@@ -19,10 +19,16 @@ def configure(conf):
 def build(bld):
 
 	bld(
+		uselib = '',
+		name = 'ip330Inc',
+		export_incdirs = '.')
+
+	bld(
 		features = 'cc',
 		source = bld.path.ant_glob('**/*.c', excl = 'drvr330.c'),
 		target = 'ip330',
 		ccflags  = ['-Wall', '-ggdb', '-fPIC'],
+		export_incdirs = '.',
 		includes = '. ../carrier /usr/include'
 		)
 	bld(

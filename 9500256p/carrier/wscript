@@ -19,9 +19,16 @@ def configure(conf):
 def build(bld):
 
 	bld(
+		uselib = '',
+		name = 'carrierInc',
+		export_incdirs = '.')
+
+	bld(
 		features = 'cc',
 		source = bld.path.ant_glob('**/*.c'),
 		ccflags = ['-fPIC'],
 		target = 'carrier',
-		includes = '. /usr/include')
+		export_incdirs = '.',
+		includes = '. /usr/include'
+		)
 
