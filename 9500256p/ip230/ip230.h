@@ -1,4 +1,5 @@
-
+#ifndef IP230_H
+#define IP230_H
 
 /*
 {+D}
@@ -172,3 +173,4 @@ void cd230(struct cblk230 *, int channel);		/* correct DAC output data */
 void cont_reg(struct cblk230 *,int hflag);
 long get_param(void);							/* input a parameter */
 #endif /* BUILDING_FOR_KERNEL */
+#endif // ifndef IP230_h
