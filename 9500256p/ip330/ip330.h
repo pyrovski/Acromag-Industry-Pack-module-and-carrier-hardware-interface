@@ -165,6 +165,16 @@ struct map330
 
 struct cblk330
 {
+  // PEB
+  long addr330; /* integer to hold board address (carrier?)*/
+
+  // ADC buffers
+  word az_data[4];
+  word cal_data[4];
+  word raw_data[SA_SIZE];
+  int cor_data[SA_SIZE];
+
+
     struct map330 *brd_ptr; /* pointer to base address of board */
     char slotLetter;	    /* IP slot letter */
     int nHandle;	    /* handle to an open carrier board */

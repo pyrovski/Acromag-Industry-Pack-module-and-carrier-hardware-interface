@@ -121,6 +121,10 @@ struct map230
 
 struct cblk230
 {
+  // PEB
+  long addr230; /* integer to hold board address (carrier?)*/
+  float ideal_volt_span[8];
+
     struct map230 *brd_ptr; /* pointer to base address of board */
     char slotLetter;	    /* IP slot letter */
     int nHandle;	    /* handle to an open carrier board */
