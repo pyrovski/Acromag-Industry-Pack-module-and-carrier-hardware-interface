@@ -71,8 +71,8 @@ typedef unsigned short word;
 /* definitions */
 #ifndef IP330_H
 #define IP330_H
-#ifndef BUILDING_FOR_KERNEL
 #define SA_SIZE 32	/* # of elements in data arrays */
+#ifndef BUILDING_FOR_KERNEL
 #define AVE_SAMPLES 64
 
 #define GAIN_X1      0  /* code for gain = 1 */
