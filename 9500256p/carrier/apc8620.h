@@ -282,6 +282,9 @@ CSTATUS GetTimeOutAccess(int nHandle, word* pState);
 CSTATUS GetIPErrorBit(int nHandle, word* pState);
 
 /*  Functions used by above functions */
+/*!
+  @todo these should report errors.  Shame on you, Acromag!
+ */
 void AddCarrier(CARRIERDATA_STRUCT* pCarrier);
 void DeleteCarrier(int nHandle);
 CARRIERDATA_STRUCT* GetCarrier(int nHandle);
