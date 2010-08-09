@@ -44,15 +44,15 @@
     REVISIONS:
 
     DATE	 BY     PURPOSE
-  --------   -----	---------------------------------------------------
-  12/22/04   FJM    Fedora core FC3 update.
-  01/20/05   FJM    Extended carrier function library interface.
-  12/19/07   FJM    Fixed close() bug needs handle not device name
-  07/21/08   FJM    Fixed CarrierInitialize() bug touched member with invalid pointer
-  04/01/09   FJM    blocking_start_convert
-  08/02/09   FJM    Add configuration register access.
+    --------   -----	---------------------------------------------------
+    12/22/04   FJM    Fedora core FC3 update.
+    01/20/05   FJM    Extended carrier function library interface.
+    12/19/07   FJM    Fixed close() bug needs handle not device name
+    07/21/08   FJM    Fixed CarrierInitialize() bug touched member with invalid pointer
+    04/01/09   FJM    blocking_start_convert
+    08/02/09   FJM    Add configuration register access.
 
-{-D}
+    {-D}
 */
 
 
@@ -66,28 +66,27 @@
 
 #define MAX_TRIES		200
 
-
+//! @todo affect multiProcess?
 /*
-	Global variables
+Global variables
 */
-int	gNumberCarriers = -1;	/* Number of boards opened and/or flag = -1 if library... */
-                            /* ... is uninitialized see function InitCarrierLib() */
+/*
+ Number of boards opened and/or flag = -1 if library
+ is uninitialized; see function InitCarrierLib()
+*/
+int	gNumberCarriers = -1;	
 
 CARRIERDATA_STRUCT *gpCarriers[MAX_CARRIERS];	/* pointer to the carrier boards */
 
-
-
-
-
 /*
-        Some systems can resolve BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware.
-        If the system is resolving BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware
-        the SWAP_ENDIAN define should be commented out.
+  Some systems can resolve BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware.
+  If the system is resolving BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware
+  the SWAP_ENDIAN define should be commented out.
 
-        When resolving the BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware is not
-        possible or desired the SWAP_ENDIAN define is provided.
+  When resolving the BIG_ENDIAN/LITTLE_ENDIAN data transfers in hardware is not
+  possible or desired the SWAP_ENDIAN define is provided.
 
-        Define SWAP_ENDIAN to enable software byte swapping for word and long transfers
+  Define SWAP_ENDIAN to enable software byte swapping for word and long transfers
 */
 
 /* #define SWAP_ENDIAN		/ * SWAP_ENDIAN enables software byte swapping for word and long transfers */
@@ -623,6 +622,7 @@ CSTATUS CarrierOpen(int nDevInstance, int* pHandle)
 	if(gNumberCarriers == MAX_CARRIERS)
 		return E_OUT_OF_CARRIERS;
 
+//! @todo affect multiProcess?
 	/* Allocate memory for a new Carrier structure */
 	pCarrier = (CARRIERDATA_STRUCT*)malloc(sizeof(CARRIERDATA_STRUCT));
 	
@@ -668,6 +668,8 @@ CSTATUS CarrierOpen(int nDevInstance, int* pHandle)
 	/* Get IRQ Number from carrier */
 	ioctl( pCarrier->nCarrierDeviceHandle, 6, &data[0] );/* get IRQ cmd */
 	pCarrier->nIntLevel = ( int )( data[nDevInstance] & 0xFF );
+
+//! @todo affect multiProcess?
 	AddCarrier(pCarrier);	/*  call function to add carrier to array and set handle */
 	*pHandle = pCarrier->nHandle;	/* return the new handle */
 	return (CSTATUS)S_OK;
@@ -829,260 +831,260 @@ CSTATUS SetIPClockControl(int nHandle, char chSlot, word uControl)
 	
 	pCarrier = GetCarrier(nHandle);
 	if(pCarrier == 0)
-		return E_INVALID_HANDLE;
+	  return E_INVALID_HANDLE;
 
 	if(pCarrier->bInitialized == FALSE)
-		return E_NOT_INITIALIZED;
+	  return E_NOT_INITIALIZED;
 
 	/* check carrier ID to see if 32MHZ IP clocking is supported */
 	if( pCarrier->uCarrierID & CARRIER_CLK )	/* nonzero can support 32MHZ IP clock */
-	{
-		pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
+	  {
+	    pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
 	    nValue = input_word(nHandle, (word*)&pPCICard->IPClockControl);
 
-		switch(chSlot)
-		{
-		case SLOT_A:
-			nValue &= 0x00FE;		/* default force bit 0 = 0 = 8MHZ IP clock */
-			if( uControl )			/* does caller want 32MHZ? */
-				nValue |= 1;		/* make slot A IP clock 32MHZ */
-			break;
-		case SLOT_B:
-			nValue &= 0x00FD;		/* default force bit 1 = 0 = 8MHZ IP clock */
-			if( uControl )			/* does caller want 32MHZ? */
-				nValue |= 2;		/* make slot B IP clock 32MHZ */
-			break;
-		case SLOT_C:
-			nValue &= 0x00FB;		/* default force bit 2 = 0 = 8MHZ IP clock */
-			if( uControl )			/* does caller want 32MHZ? */
-				nValue |= 4;		/* make slot C IP clock 32MHZ */
-			break;
-		case SLOT_D:
-			nValue &= 0x00F7;		/* default force bit 3 = 0 = 8MHZ IP clock */
-			if( uControl )			/* does caller want 32MHZ? */
-			nValue |= 8;			/* make slot D IP clock 32MHZ */
-			break;
-		case SLOT_E:
-			nValue &= 0x00EF;		/* default force bit 4 = 0 = 8MHZ IP clock */
-			if( uControl )			/* does caller want 32MHZ? */
-				nValue |= 0x10;		/* make slot E IP clock 32MHZ */
-			break;
-		default:
-			return E_INVALID_SLOT;
-			break;
-		}
-		output_word(nHandle, (word*)&pPCICard->IPClockControl, nValue ); /* write value */
-		return (CSTATUS)S_OK;
-	}
+	    switch(chSlot)
+	      {
+	      case SLOT_A:
+		nValue &= 0x00FE;		/* default force bit 0 = 0 = 8MHZ IP clock */
+		if( uControl )			/* does caller want 32MHZ? */
+		  nValue |= 1;		/* make slot A IP clock 32MHZ */
+		break;
+	      case SLOT_B:
+		nValue &= 0x00FD;		/* default force bit 1 = 0 = 8MHZ IP clock */
+		if( uControl )			/* does caller want 32MHZ? */
+		  nValue |= 2;		/* make slot B IP clock 32MHZ */
+		break;
+	      case SLOT_C:
+		nValue &= 0x00FB;		/* default force bit 2 = 0 = 8MHZ IP clock */
+		if( uControl )			/* does caller want 32MHZ? */
+		  nValue |= 4;		/* make slot C IP clock 32MHZ */
+		break;
+	      case SLOT_D:
+		nValue &= 0x00F7;		/* default force bit 3 = 0 = 8MHZ IP clock */
+		if( uControl )			/* does caller want 32MHZ? */
+		  nValue |= 8;			/* make slot D IP clock 32MHZ */
+		break;
+	      case SLOT_E:
+		nValue &= 0x00EF;		/* default force bit 4 = 0 = 8MHZ IP clock */
+		if( uControl )			/* does caller want 32MHZ? */
+		  nValue |= 0x10;		/* make slot E IP clock 32MHZ */
+		break;
+	      default:
+		return E_INVALID_SLOT;
+		break;
+	      }
+	    output_word(nHandle, (word*)&pPCICard->IPClockControl, nValue ); /* write value */
+	    return (CSTATUS)S_OK;
+	  }
 	return (CSTATUS)E_NOT_IMPLEMENTED;
 }
 
 
 CSTATUS GetIPClockControl(int nHandle, char chSlot, word* pControl)
 {
-	CARRIERDATA_STRUCT* pCarrier;
-	PCI_BOARD_MEMORY_MAP* pPCICard;
-	word nValue;
+  CARRIERDATA_STRUCT* pCarrier;
+  PCI_BOARD_MEMORY_MAP* pPCICard;
+  word nValue;
 	
-	*pControl = 0;	/* default */
+  *pControl = 0;	/* default */
 
-	pCarrier = GetCarrier(nHandle);
-	if(pCarrier == 0)
-		return E_INVALID_HANDLE;
+  pCarrier = GetCarrier(nHandle);
+  if(pCarrier == 0)
+    return E_INVALID_HANDLE;
 
-	if(pCarrier->bInitialized == FALSE)
-		return E_NOT_INITIALIZED;
+  if(pCarrier->bInitialized == FALSE)
+    return E_NOT_INITIALIZED;
 
-	/* check carrier ID to see if 32MHZ IP clocking is supported */
-	if( pCarrier->uCarrierID & CARRIER_CLK )	/* nonzero can support 32MHZ IP clock */
+  /* check carrier ID to see if 32MHZ IP clocking is supported */
+  if( pCarrier->uCarrierID & CARRIER_CLK )	/* nonzero can support 32MHZ IP clock */
+    {
+      pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
+      nValue = input_word(nHandle, (word*)&pPCICard->IPClockControl);
+
+      switch(chSlot)
 	{
-		pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
-	    nValue = input_word(nHandle, (word*)&pPCICard->IPClockControl);
-
-		switch(chSlot)
-		{
-		case SLOT_A:
-			if( nValue & 1 )	/* test IP clock bit 0 = 8MHZ, 1 = 32MHZ */
-				nValue = 1;
-			else
-				nValue = 0;
-			break;
-		case SLOT_B:
-			if( nValue & 2 )	/* bit 1 */
-				nValue = 1;
-			else
-				nValue = 0;
-			break;
-		case SLOT_C:
-			if( nValue & 4 )	/* bit 2 */
-				nValue = 1;
-			else
-				nValue = 0;
-			break;
-		case SLOT_D:
-			if( nValue & 8 )	/* bit 3 */
-				nValue = 1;
-			else
-				nValue = 0;
-			break;
-		case SLOT_E:
-			if( nValue & 0x10 )	/* bit 4 */
-				nValue = 1;
-			else
-				nValue = 0;
-			break;
-		default:
-			return E_INVALID_SLOT;
-			break;
-		}
-		*pControl = nValue;			/* write value */
-		return (CSTATUS)S_OK;
+	case SLOT_A:
+	  if( nValue & 1 )	/* test IP clock bit 0 = 8MHZ, 1 = 32MHZ */
+	    nValue = 1;
+	  else
+	    nValue = 0;
+	  break;
+	case SLOT_B:
+	  if( nValue & 2 )	/* bit 1 */
+	    nValue = 1;
+	  else
+	    nValue = 0;
+	  break;
+	case SLOT_C:
+	  if( nValue & 4 )	/* bit 2 */
+	    nValue = 1;
+	  else
+	    nValue = 0;
+	  break;
+	case SLOT_D:
+	  if( nValue & 8 )	/* bit 3 */
+	    nValue = 1;
+	  else
+	    nValue = 0;
+	  break;
+	case SLOT_E:
+	  if( nValue & 0x10 )	/* bit 4 */
+	    nValue = 1;
+	  else
+	    nValue = 0;
+	  break;
+	default:
+	  return E_INVALID_SLOT;
+	  break;
 	}
-	return (CSTATUS)E_NOT_IMPLEMENTED;
+      *pControl = nValue;			/* write value */
+      return (CSTATUS)S_OK;
+    }
+  return (CSTATUS)E_NOT_IMPLEMENTED;
 }
 
 CSTATUS SetAutoAckDisable(int nHandle, word uState)
 {
-	return (CSTATUS)E_NOT_IMPLEMENTED;
+  return (CSTATUS)E_NOT_IMPLEMENTED;
 }
 
 CSTATUS GetAutoAckDisable(int nHandle, word* pState)
 {
-	*pState = FALSE;
-	return (CSTATUS)E_NOT_IMPLEMENTED;
+  *pState = FALSE;
+  return (CSTATUS)E_NOT_IMPLEMENTED;
 }
 
 CSTATUS GetTimeOutAccess(int nHandle, word* pState)
 {
-	CARRIERDATA_STRUCT* pCarrier;
-	PCI_BOARD_MEMORY_MAP* pPCICard;
-	word nValue;
+  CARRIERDATA_STRUCT* pCarrier;
+  PCI_BOARD_MEMORY_MAP* pPCICard;
+  word nValue;
 
-	pCarrier = GetCarrier(nHandle);
-	if(pCarrier == 0)
-		return E_INVALID_HANDLE;
+  pCarrier = GetCarrier(nHandle);
+  if(pCarrier == 0)
+    return E_INVALID_HANDLE;
 
-	pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
-	/* get control register */
-	nValue = input_word(nHandle, (word*)&pPCICard->controlReg);
+  pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
+  /* get control register */
+  nValue = input_word(nHandle, (word*)&pPCICard->controlReg);
 
-	if(nValue & 0x0010)	/* mask for IP timeout status */
-	  *pState = TRUE;
-	else
-	  *pState = FALSE;
+  if(nValue & 0x0010)	/* mask for IP timeout status */
+    *pState = TRUE;
+  else
+    *pState = FALSE;
 
-	return (CSTATUS)S_OK;
+  return (CSTATUS)S_OK;
 }
 
 CSTATUS GetIPErrorBit(int nHandle, word* pState)
 {
-	CARRIERDATA_STRUCT* pCarrier;
-	PCI_BOARD_MEMORY_MAP* pPCICard;
-	word nValue;
+  CARRIERDATA_STRUCT* pCarrier;
+  PCI_BOARD_MEMORY_MAP* pPCICard;
+  word nValue;
 
-	pCarrier = GetCarrier(nHandle);
-	if(pCarrier == 0)
-		return E_INVALID_HANDLE;
+  pCarrier = GetCarrier(nHandle);
+  if(pCarrier == 0)
+    return E_INVALID_HANDLE;
 
-	pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
-	/* get control register */
-	nValue = input_word(nHandle, (word*)&pPCICard->controlReg);
+  pPCICard = (PCI_BOARD_MEMORY_MAP*)pCarrier->lBaseAddress;		
+  /* get control register */
+  nValue = input_word(nHandle, (word*)&pPCICard->controlReg);
 
-	if( nValue & 0x0001 )	/* mask for IP error bit */
-	  *pState = TRUE;
-	else
-	  *pState = FALSE;
+  if( nValue & 0x0001 )	/* mask for IP error bit */
+    *pState = TRUE;
+  else
+    *pState = FALSE;
 
-	return (CSTATUS)S_OK;
+  return (CSTATUS)S_OK;
 }
 
 
 
 
 /*
-   Read/write the VPD registers.
-   Address - contains the address of serial EEPROM to read or write
-   Data - data only for a write cycle
-   Cycle - cycle type read or write
+  Read/write the VPD registers.
+  Address - contains the address of serial EEPROM to read or write
+  Data - data only for a write cycle
+  Cycle - cycle type read or write
 */
 
 CSTATUS AccessVPD( int nHandle, ULONG Address, ULONG* Data, ULONG Cycle )
 {
 
-    ULONG lValue, i;
-	long offset;
-	CARRIERDATA_STRUCT* pCarrier;
+  ULONG lValue, i;
+  long offset;
+  CARRIERDATA_STRUCT* pCarrier;
 
 
-	pCarrier = GetCarrier(nHandle);
-	if(pCarrier == 0)
-		return E_INVALID_HANDLE;
+  pCarrier = GetCarrier(nHandle);
+  if(pCarrier == 0)
+    return E_INVALID_HANDLE;
 
-	if(pCarrier->bInitialized == FALSE)
-		return E_NOT_INITIALIZED;
+  if(pCarrier->bInitialized == FALSE)
+    return E_NOT_INITIALIZED;
 
-    Address <<= 16;				/* position address */
-    Address &= 0x7FFF0000;		/* save address, bit 31 = 0 = read cycle */
+  Address <<= 16;				/* position address */
+  Address &= 0x7FFF0000;		/* save address, bit 31 = 0 = read cycle */
 
-	offset = 0x4C;				/* PCI VPD address register address */
-	lValue = input_long_pci_config( nHandle, &offset);
+  offset = 0x4C;				/* PCI VPD address register address */
+  lValue = input_long_pci_config( nHandle, &offset);
 
-    lValue &= 0x0000FFFF;		/* must preserve LS 16 bits */
-    lValue |= Address;			/* install MS 16 bits */
+  lValue &= 0x0000FFFF;		/* must preserve LS 16 bits */
+  lValue |= Address;			/* install MS 16 bits */
 
-    if( Cycle )					/* if write cycle... */
+  if( Cycle )					/* if write cycle... */
     {
-		lValue |= 0x80000000;	/* ... OR in the write bit */
+      lValue |= 0x80000000;	/* ... OR in the write bit */
 
-		/* write the data value out to the VPD data register */
-		offset = 0x50;			/* PCI VPD data register address */
-		output_long_pci_config( nHandle, &offset, (ULONG)*Data);
+      /* write the data value out to the VPD data register */
+      offset = 0x50;			/* PCI VPD data register address */
+      output_long_pci_config( nHandle, &offset, (ULONG)*Data);
 
-		/* write the address along with the EEPROM write bit set to start the EEPROM write cycle */
-		offset = 0x4C;				/* PCI VPD address register address */
-		output_long_pci_config( nHandle, &offset, (ULONG)lValue);
+      /* write the address along with the EEPROM write bit set to start the EEPROM write cycle */
+      offset = 0x4C;				/* PCI VPD address register address */
+      output_long_pci_config( nHandle, &offset, (ULONG)lValue);
 
 
-		/* wait for the EEPROM write to complete, bit 31 of the address register becomes 0 */
-		offset = 0x4C;				/* PCI VPD address register address */
-		for(i = 0; i < (ULONG)MAX_TRIES; i++ )
-		{
-			lValue = input_long_pci_config( nHandle, &offset);
+      /* wait for the EEPROM write to complete, bit 31 of the address register becomes 0 */
+      offset = 0x4C;				/* PCI VPD address register address */
+      for(i = 0; i < (ULONG)MAX_TRIES; i++ )
+	{
+	  lValue = input_long_pci_config( nHandle, &offset);
 
-			if( (lValue & 0x80000000) == 0 )		/* zero when done */
-				break;
+	  if( (lValue & 0x80000000) == 0 )		/* zero when done */
+	    break;
 
-			usleep(20);				/* Linux */
-		}
-
-		if( i > (ULONG)MAX_TRIES )
-			return((int) -1);         	/* not ready error */
-
-    }
-    else				/* else a read cycle... */
-    {
-		offset = 0x4C;				/* PCI VPD address register address */
-		output_long_pci_config( nHandle, &offset, (ULONG)lValue);
-
-	 	/* wait for the EEPROM read to complete, bit 31 of the address register becomes 1 */
-		for(i = 0; i < (ULONG)MAX_TRIES; i++ )
-		{
-			lValue = input_long_pci_config( nHandle, &offset);
-
-			if( lValue & 0x80000000 )	/* non-zero when done */
-				break;
-
-			usleep(20);				/* Linux */
-		}
-
-		if( i > (ULONG)MAX_TRIES )
-		   return((int) -2);         	/* not ready error */
-
-		/* read the data value from the VPD data register */
-		offset = 0x50;				/* PCI VPD data register address */
-		*Data = input_long_pci_config( nHandle, &offset);
-
+	  usleep(20);				/* Linux */
 	}
 
-    return((int) 0);
+      if( i > (ULONG)MAX_TRIES )
+	return((int) -1);         	/* not ready error */
+
+    }
+  else				/* else a read cycle... */
+    {
+      offset = 0x4C;				/* PCI VPD address register address */
+      output_long_pci_config( nHandle, &offset, (ULONG)lValue);
+
+      /* wait for the EEPROM read to complete, bit 31 of the address register becomes 1 */
+      for(i = 0; i < (ULONG)MAX_TRIES; i++ )
+	{
+	  lValue = input_long_pci_config( nHandle, &offset);
+
+	  if( lValue & 0x80000000 )	/* non-zero when done */
+	    break;
+
+	  usleep(20);				/* Linux */
+	}
+
+      if( i > (ULONG)MAX_TRIES )
+	return((int) -2);         	/* not ready error */
+
+      /* read the data value from the VPD data register */
+      offset = 0x50;				/* PCI VPD data register address */
+      *Data = input_long_pci_config( nHandle, &offset);
+
+    }
+
+  return((int) 0);
 }
